@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Data;
+using Sales.API.Infrastructure.Repositories;
+using Sales.API.Infrastructure.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=LocalConnection"));
+
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 var app = builder.Build();
 

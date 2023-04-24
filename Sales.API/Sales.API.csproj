@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\Sales.Shared\Sales.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sales.Shared\Sales.Shared.csproj" />
+    <Folder Include="Application\" />
   </ItemGroup>
 
 </Project>
