@@ -1,7 +1,7 @@
-using Sales.Blazor;
-using Sales.Blazor.Repositories;
+using Sales.Web;
+using Sales.Web.Repositories;
+using Sales.Web.Repositories.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
-using Sales.Blazor.Repositories.Interfaces;
 using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

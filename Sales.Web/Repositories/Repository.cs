@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
-using Sales.Blazor.Responses;
-using Sales.Blazor.Repositories.Interfaces;
+using Sales.Web.Responses;
+using Sales.Web.Repositories.Interfaces;
 
-namespace Sales.Blazor.Repositories
+namespace Sales.Web.Repositories
 {
     public class Repository : IRepository
     {
@@ -78,4 +78,5 @@ namespace Sales.Blazor.Repositories
             return new HttpResponseWrapper<object>(null, !response.IsSuccessStatusCode, response);
         }
     }
+
 }

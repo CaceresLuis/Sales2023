@@ -1,6 +1,6 @@
-﻿using Sales.Blazor.Responses;
+﻿using Sales.Web.Responses;
 
-namespace Sales.Blazor.Repositories.Interfaces
+namespace Sales.Web.Repositories.Interfaces
 {
     public interface IRepository
     {

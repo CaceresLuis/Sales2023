@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Sales.API.Data;
+using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Repositories;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 
@@ -13,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=LocalConnection"));
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddCors(options =>
 {

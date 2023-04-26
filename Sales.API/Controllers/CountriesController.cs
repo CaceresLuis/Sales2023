@@ -1,4 +1,5 @@
-﻿using Sales.Shared.DTOs;
+﻿using AutoMapper;
+using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Repositories.Interfaces;
@@ -9,21 +10,24 @@ namespace Sales.API.Controllers
     [ApiController]
     public class CountriesController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IRepository<Country> _countryRepository;
 
-        public CountriesController(IRepository<Country> countryRepository)
+        public CountriesController(IRepository<Country> countryRepository, IMapper mapper)
         {
+            _mapper = mapper;
             _countryRepository = countryRepository;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Country>> GetCountries()
+        public async Task<IEnumerable<CountryDto>> GetAsync()
         {
-            return await _countryRepository.GetAllAsync();
+            IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<CountryDto>>(countries);
         }
 
         [HttpGet("id")]
-        public async Task<IActionResult> GetCountry(int id)
+        public async Task<ActionResult<CountryDto>> GetAsync(int id)
         {
             Country country = await _countryRepository.GetByIdAsync(id);
             if (country is null)
@@ -33,7 +37,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCountry(CountryDto countryDto)
+        public async Task<ActionResult<bool>> AddCountry(CountryDto countryDto)
         {
             Country country = new()
             {
@@ -44,7 +48,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("id")]
-        public async Task<IActionResult> UpdateCountry(int id, CountryDto countryDto)
+        public async Task<ActionResult<bool>> UpdateCountry(int id, CountryDto countryDto)
         {
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");
@@ -59,7 +63,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpDelete("id")]
-        public async Task<IActionResult> DeleteCountry(int id)
+        public async Task<ActionResult<bool>> DeleteCountry(int id)
         {
             Country country = await _countryRepository.GetByIdAsync(id);
             if (country is null)
