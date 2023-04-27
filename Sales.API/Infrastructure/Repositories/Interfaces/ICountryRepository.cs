@@ -4,6 +4,6 @@ namespace Sales.API.Infrastructure.Repositories.Interfaces
 {
     public interface ICountryRepository : IRepository<Country>
     {
-        Task<bool> GetCountryByName(string name);
+        Task<bool> CountryExisteAsync(string name);
     }
 }

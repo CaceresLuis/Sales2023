@@ -43,7 +43,7 @@ namespace Sales.API.Controllers
         public async Task<ActionResult<bool>> AddCountry(CountryDto countryDto)
         {
             countryDto.Id = 0;
-            if (await _countryRepository.GetCountryByName(countryDto.Name))
+            if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
             return Ok(await _countryRepository.AddAsync(_mapper.Map<Country>(countryDto)));
@@ -56,7 +56,7 @@ namespace Sales.API.Controllers
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");
 
-            if (await _countryRepository.GetCountryByName(countryDto.Name))
+            if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
             return Ok(await _countryRepository.UpdateAsync(_mapper.Map<Country>(countryDto)));

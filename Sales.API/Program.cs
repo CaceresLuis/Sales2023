@@ -15,6 +15,7 @@ builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=LocalCo
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddTransient<SeedDb>();
 
 builder.Services.AddCors(options =>

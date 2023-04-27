@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Sales.API.Data.Entities;
+﻿using Sales.API.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sales.API.Data
 {
@@ -8,11 +8,13 @@ namespace Sales.API.Data
         public SalesDataContex(DbContextOptions<SalesDataContex> options) : base(options) { }
 
         public DbSet<Country> Countries { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Country>().HasIndex(x => x.Name).IsUnique();
+            modelBuilder.Entity<Category>().HasIndex(x => x.Name).IsUnique();
         }
     }
 }

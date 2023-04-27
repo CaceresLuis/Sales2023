@@ -14,10 +14,11 @@ namespace Sales.API.Data
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
-            await CheckCountriesAsync();
+            await CheckAsync();
+            //await CheckCategoriesAsync();
         }
 
-        private async Task CheckCountriesAsync()
+        private async Task CheckAsync()
         {
             if (!_context.Countries.Any())
             {
@@ -37,9 +38,37 @@ namespace Sales.API.Data
                 _context.Countries.Add(new Country { Name = "Uruguay" });
                 _context.Countries.Add(new Country { Name = "Colombia" });
                 _context.Countries.Add(new Country { Name = "Estados Unidos" });
-                
-                await _context.SaveChangesAsync();
+
             }
+
+            if (!_context.Countries.Any())
+            {
+                _context.Categories.Add(new Category { Name = "Calzado" });
+                _context.Categories.Add(new Category { Name = "Electrodomestico" });
+                _context.Categories.Add(new Category { Name = "Electronica" });
+                _context.Categories.Add(new Category { Name = "Informatica" });
+                _context.Categories.Add(new Category { Name = "Telefonia" });
+                _context.Categories.Add(new Category { Name = "Muebles" });
+                _context.Categories.Add(new Category { Name = "Audio y video" });
+                _context.Categories.Add(new Category { Name = "Automovil" });
+            }
+                await _context.SaveChangesAsync();
         }
+
+        //private async Task CheckCategoriesAsync()
+        //{
+        //    if (!_context.Countries.Any())
+        //    {
+        //        _context.Categories.Add(new Category { Name = "Calzado" });
+        //        _context.Categories.Add(new Category { Name = "Electrodomestico" });
+        //        _context.Categories.Add(new Category { Name = "Electronica" });
+        //        _context.Categories.Add(new Category { Name = "Informatica" });
+        //        _context.Categories.Add(new Category { Name = "Telefonia" });
+        //        _context.Categories.Add(new Category { Name = "Muebles" });
+        //        _context.Categories.Add(new Category { Name = "Audio y video" });
+        //        _context.Categories.Add(new Category { Name = "Automovil" });
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
     }
 }

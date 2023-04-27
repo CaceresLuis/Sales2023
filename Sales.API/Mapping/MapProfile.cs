@@ -9,6 +9,7 @@ namespace Sales.API.Mapping
         public MapProfile()
         {
             CreateMap<Country,  CountryDto>().ReverseMap();
+            CreateMap<Category,  CategoryDto>().ReverseMap();
         }
     }
 }

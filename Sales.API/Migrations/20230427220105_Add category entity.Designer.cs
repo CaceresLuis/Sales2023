@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sales.API.Data;
 
@@ -10,9 +11,10 @@ using Sales.API.Data;
 namespace Sales.API.Migrations
 {
     [DbContext(typeof(SalesDataContex))]
-    partial class SalesDataContexModelSnapshot : ModelSnapshot
+    [Migration("20230427220105_Add category entity")]
+    partial class Addcategoryentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

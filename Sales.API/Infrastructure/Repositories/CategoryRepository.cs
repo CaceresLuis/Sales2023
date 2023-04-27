@@ -5,17 +5,17 @@ using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Infrastructure.Repositories
 {
-    public class CountryRepository : Repository<Country>, ICountryRepository
+    public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         private readonly SalesDataContex _context;
-        public CountryRepository(SalesDataContex context) : base(context)
+        public CategoryRepository(SalesDataContex context) : base(context)
         {
             _context = context;
         }
 
-        public async Task<bool> CountryExisteAsync(string name)
+        public async Task<bool> CategoryExisteAsysn(string name)
         {
-            return await _context.Countries.AnyAsync(c => c.Name == name);
+            return await _context.Categories.AnyAsync(c => c.Name == name);
         }
     }
 }
