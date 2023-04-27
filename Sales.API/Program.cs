@@ -14,6 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=LocalConnection"));
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 
 builder.Services.AddCors(options =>
 {
@@ -26,7 +27,7 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+//builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 var app = builder.Build();
 

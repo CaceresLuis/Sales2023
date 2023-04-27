@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Sales.API.Data;
+﻿using Sales.API.Data;
+using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Infrastructure.Repositories
@@ -7,7 +7,7 @@ namespace Sales.API.Infrastructure.Repositories
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly SalesDataContex _context;
-        private readonly DbSet<T> _dbSet;
+        internal readonly DbSet<T> _dbSet;
 
         public Repository(SalesDataContex context)
         {

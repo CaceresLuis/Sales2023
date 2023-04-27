@@ -11,16 +11,16 @@ namespace Sales.API.Controllers
     public class CountriesController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly IRepository<Country> _countryRepository;
+        private readonly ICountryRepository _countryRepository;
 
-        public CountriesController(IRepository<Country> countryRepository, IMapper mapper)
+        public CountriesController(ICountryRepository countryRepository, IMapper mapper)
         {
             _mapper = mapper;
             _countryRepository = countryRepository;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<CountryDto>> GetAsync()
+        public async Task<IEnumerable<CountryDto>> GetAllAsync()
         {
             IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<CountryDto>>(countries);
@@ -53,11 +53,10 @@ namespace Sales.API.Controllers
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");
 
-            Country country = new()
-            {
-                Id = countryDto.Id,
-                Name = countryDto.Name
-            };
+            if(await _countryRepository.GetCountryByName(countryDto.Name))
+                return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
+
+            Country country = _mapper.Map<Country>(countryDto);
 
             return Ok(await _countryRepository.UpdateAsync(country));
         }

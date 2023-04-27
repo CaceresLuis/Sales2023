@@ -5,7 +5,7 @@
 
 <h3>Crear Pais</h3>
 
-<CountryForm @ref="countryForm" Country="Country" OnValidSubmit="Create" ReturnAction="Return"></CountryForm>
+<CountryForm @ref="countryForm" Country="Country" OnValidSubmit="Create" ReturnAction="Back"></CountryForm>
 
 @code {
     private CountryDto Country = new();
@@ -21,12 +21,12 @@
             return;
         }
 
-        string? mesasge = await httpResponse.GetErrorMessageAsync();
-        await sweetAlertService.FireAsync("Error", mesasge);
+        Back();
     }
 
-    private void Return()
+    private void Back()
     {
+        countryForm!.FormPostedSuccessfully = true;
         navegationManager.NavigateTo("countries");
     }
 }

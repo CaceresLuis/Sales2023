@@ -1,0 +1,59 @@
+﻿@page "/countries/edit/{Id:int}"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+<h3>Country Edit</h3>
+
+@if (country is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <CountryForm @ref="countryForm" Country="country" OnValidSubmit="EditAsync" ReturnAction="Back" />
+}
+
+@code {
+    private CountryDto? country;
+    private CountryForm? countryForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpResponse = await repository.Get<CountryDto>($"api/countries/id?id={Id}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            navigationManager.NavigateTo("/countries");
+            return;
+        } 
+
+        country = httpResponse.Response;
+    }
+
+    private async Task EditAsync()
+    {
+        var httpResponse = await repository.Put($"api/countries/id?id={Id}", country);
+        if (httpResponse.Error)
+        {
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            navigationManager.NavigateTo("/countries");
+            return;
+        }
+
+        Back();
+    }
+
+    private void Back()
+    {
+        countryForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/countries");    
+    }
+
+
+}

@@ -47,16 +47,14 @@
         {
             Title = "Confirmacion",
             Text = "Deseas abandonar la pagina y perder los cambios?",
-            Icon = SweetAlertIcon.Warning,
+            Icon = SweetAlertIcon.Question,
             ShowCancelButton = true,
             CancelButtonText = "No",
             ConfirmButtonText = "Si"
         });
 
-        bool confirm = !string.IsNullOrEmpty(result.Value);
-        if (confirm) return;
+        if (!string.IsNullOrEmpty(result.Value)) return;
 
         context.PreventNavigation();
-
     }
 }
