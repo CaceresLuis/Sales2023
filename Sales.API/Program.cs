@@ -15,6 +15,7 @@ builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=LocalCo
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+builder.Services.AddTransient<SeedDb>();
 
 builder.Services.AddCors(options =>
 {
@@ -26,10 +27,20 @@ builder.Services.AddCors(options =>
     });
 });
 
-
-//builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
 var app = builder.Build();
+
+//inyeccion de datos harcode
+SeedData(app);
+static void SeedData(WebApplication app)
+{
+    IServiceScopeFactory scopeFactory = app.Services.GetService<IServiceScopeFactory>();
+
+    using(IServiceScope scope = scopeFactory.CreateScope())
+    {
+        SeedDb service = scope.ServiceProvider.GetService<SeedDb>();
+        service.SeedAsync().Wait();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -20,10 +20,13 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<CountryDto>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync()
         {
             IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<CountryDto>>(countries);
+            if (!countries.Any())
+                return NotFound("Aun no hay registro de paises");
+
+            return Ok(_mapper.Map<IEnumerable<CountryDto>>(countries));
         }
 
         [HttpGet("id")]
@@ -39,12 +42,12 @@ namespace Sales.API.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> AddCountry(CountryDto countryDto)
         {
-            Country country = new()
-            {
-                Name = countryDto.Name
-            };
+            countryDto.Id = 0;
+            if (await _countryRepository.GetCountryByName(countryDto.Name))
+                return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            return Ok(await _countryRepository.AddAsync(country));
+            return Ok(await _countryRepository.AddAsync(_mapper.Map<Country>(countryDto)));
+
         }
 
         [HttpPut("id")]
@@ -53,12 +56,10 @@ namespace Sales.API.Controllers
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");
 
-            if(await _countryRepository.GetCountryByName(countryDto.Name))
+            if (await _countryRepository.GetCountryByName(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            Country country = _mapper.Map<Country>(countryDto);
-
-            return Ok(await _countryRepository.UpdateAsync(country));
+            return Ok(await _countryRepository.UpdateAsync(_mapper.Map<Country>(countryDto)));
         }
 
         [HttpDelete("id")]

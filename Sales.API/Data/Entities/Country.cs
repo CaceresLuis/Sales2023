@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Sales.API.Data.Entities
 {
