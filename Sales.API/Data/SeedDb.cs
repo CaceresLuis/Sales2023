@@ -41,7 +41,7 @@ namespace Sales.API.Data
 
             }
 
-            if (!_context.Countries.Any())
+            if (!_context.Categories.Any())
             {
                 _context.Categories.Add(new Category { Name = "Calzado" });
                 _context.Categories.Add(new Category { Name = "Electrodomestico" });
@@ -54,21 +54,5 @@ namespace Sales.API.Data
             }
                 await _context.SaveChangesAsync();
         }
-
-        //private async Task CheckCategoriesAsync()
-        //{
-        //    if (!_context.Countries.Any())
-        //    {
-        //        _context.Categories.Add(new Category { Name = "Calzado" });
-        //        _context.Categories.Add(new Category { Name = "Electrodomestico" });
-        //        _context.Categories.Add(new Category { Name = "Electronica" });
-        //        _context.Categories.Add(new Category { Name = "Informatica" });
-        //        _context.Categories.Add(new Category { Name = "Telefonia" });
-        //        _context.Categories.Add(new Category { Name = "Muebles" });
-        //        _context.Categories.Add(new Category { Name = "Audio y video" });
-        //        _context.Categories.Add(new Category { Name = "Automovil" });
-        //        await _context.SaveChangesAsync();
-        //    }
-        //}
     }
 }

@@ -28,8 +28,7 @@ else
         {
             var message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
-            navigationManager.NavigateTo("/countries");
-            return;
+            Back();
         } 
 
         country = httpResponse.Response;
@@ -42,10 +41,10 @@ else
         {
             string? message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
-            navigationManager.NavigateTo("/countries");
             return;
         }
 
+        await sweetAlertService.FireAsync("Actualizado", "El pais fue Actualizado", SweetAlertIcon.Success);
         Back();
     }
 

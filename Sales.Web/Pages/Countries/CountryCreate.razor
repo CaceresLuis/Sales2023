@@ -1,6 +1,6 @@
 ﻿@page "/countries/create"
-@inject IRepository resository
-@inject NavigationManager navegationManager
+@inject IRepository repository
+@inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
 <h3>Crear Pais</h3>
@@ -13,20 +13,21 @@
 
     private async Task Create()
     {
-        var httpResponse = await resository.Post("api/countries", Country);
-        if (!httpResponse.Error)
+        var httpResponse = await repository.Post("api/countries", Country);
+        if (httpResponse.Error)
         {
-            countryForm!.FormPostedSuccessfully = true;
-            navegationManager.NavigateTo("countries");
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
+        await sweetAlertService.FireAsync("Registrada", "El pais fue Registrado", SweetAlertIcon.Success);
         Back();
     }
 
     private void Back()
     {
         countryForm!.FormPostedSuccessfully = true;
-        navegationManager.NavigateTo("countries");
+        navigationManager.NavigateTo("countries");
     }
 }

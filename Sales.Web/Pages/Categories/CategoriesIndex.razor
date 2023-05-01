@@ -1,31 +1,31 @@
-﻿@page "/countries"
+﻿@page "/categories"
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
-<h3>Paises</h3>
+<h3>Categorias</h3>
 
-<a class="btn btn-primary mb-3" href="/countries/create">Crear Pais <i class="oi oi-plus"></i></a>
+<a class="btn btn-primary mb-3" href="/categories/create">Crear categoria <i class="oi oi-plus"></i></a>
 
-<GenericList MyList="Countries">
+<GenericList MyList="Categories">
     <Body>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th></th>
-                    <th>Pais</th>
+                    <th>Categoria</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var country in Countries!)
+                @foreach (var category in Categories!)
                 {
                     <tr>
                         <td>
-                            @country.Name
+                            @category.Name
                         </td>
                         <td>
-                            <a class="btn btn-warning" href="/countries/edit/@country.Id"><i class="oi oi-pencil"></i></a>
-                            <button class="btn btn-danger" @onclick=@(() => DeleteAsync(country.Id))><i class="oi oi-trash"></i></button>
+                            <a class="btn btn-warning" href="/categories/edit/@category.Id"><i class="oi oi-pencil"></i></a>
+                            <button class="btn btn-danger" @onclick=@(() => DeleteAsync(category.Id))><i class="oi oi-trash"></i></button>
                         </td>
                     </tr>
                 }
@@ -35,7 +35,7 @@
 </GenericList>
 
 @code {
-    public List<CountryDto>? Countries { get; set; }
+    public List<CategoryDto>? Categories { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
@@ -44,34 +44,33 @@
 
     private async Task LoadAsync()
     {
-        var httpResponse = await repository.Get<List<CountryDto>>("api/countries");
-        Countries = httpResponse.Response!;
+        var httpResponse = await repository.Get<List<CategoryDto>>("api/categories");
+        Categories = httpResponse.Response;
     }
 
     private async Task DeleteAsync(int id)
     {
         var result = await sweetAlertService.FireAsync(new SweetAlertOptions
-        {
+            {
                 Title = "Confirmacion",
                 Text = "Realmente deseas eliminar el registro?",
                 Icon = SweetAlertIcon.Question,
                 ShowCancelButton = true,
                 CancelButtonText = "No",
                 ConfirmButtonText = "Si"
-        });
+            });
 
         if (string.IsNullOrEmpty(result.Value))
             return;
 
-        var httpResponse = await repository.Delete($"api/countries/id?id={id}");
+        var httpResponse = await repository.Delete($"api/categories/id?id={id}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        await sweetAlertService.FireAsync("Borrado", "El pais fue borrado", SweetAlertIcon.Success);
+        await sweetAlertService.FireAsync("Borrado", "La categoria fue borrada", SweetAlertIcon.Success);
         await LoadAsync();
     }
 }
-
