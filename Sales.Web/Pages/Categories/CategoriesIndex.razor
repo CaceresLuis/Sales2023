@@ -24,6 +24,7 @@
                             @category.Name
                         </td>
                         <td>
+                            <a class="btn btn-info" href="/countries/details/@category.Id"><i class="oi oi-list"></i></a>
                             <a class="btn btn-warning" href="/categories/edit/@category.Id"><i class="oi oi-pencil"></i></a>
                             <button class="btn btn-danger" @onclick=@(() => DeleteAsync(category.Id))><i class="oi oi-trash"></i></button>
                         </td>

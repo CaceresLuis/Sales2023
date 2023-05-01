@@ -22,7 +22,17 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync()
         {
-            IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
+            IEnumerable<Country> countries = await _countryRepository.GetAllCountriesWhitEstatesAsync();
+            if (!countries.Any())
+                return NotFound("Aun no hay registro de paises");
+
+            return Ok(_mapper.Map<IEnumerable<CountryDto>>(countries));
+        }
+
+        [HttpGet("Full")]
+        public async Task<ActionResult<IEnumerable<CountryDto>>> GetFullsync()
+        {
+            IEnumerable<Country> countries = await _countryRepository.GetAllCountriesFullDataAsync();
             if (!countries.Any())
                 return NotFound("Aun no hay registro de paises");
 

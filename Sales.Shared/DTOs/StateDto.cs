@@ -11,7 +11,8 @@ namespace Sales.Shared.DTOs
         [MaxLength(100, ErrorMessage = "El campos {0} no puede tener mas de {1} caracteres")]
         public string? Name { get; set; }
 
-        public CountryDto? Country { get; set; }
+        public int CountryId { get; set; }
+        //public CountryDto? Country { get; set; }
         public ICollection<CityDto>? Cities { get; set; }
         public int CitiesNumber => Cities == null ? 0 : Cities.Count;
     }

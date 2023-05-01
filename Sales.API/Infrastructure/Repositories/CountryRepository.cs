@@ -17,5 +17,20 @@ namespace Sales.API.Infrastructure.Repositories
         {
             return await _context.Countries.AnyAsync(c => c.Name == name);
         }
+
+        public async Task<IEnumerable<Country>> GetAllCountriesFullDataAsync()
+        {
+            return await _context.Countries
+                .Include(c => c.States)
+                .ThenInclude(s => s.Cities)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Country>> GetAllCountriesWhitEstatesAsync()
+        {
+            return await _context.Countries
+                .Include(c => c.States)
+                .ToListAsync();
+        }
     }
 }

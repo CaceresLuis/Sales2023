@@ -8,6 +8,8 @@ namespace Sales.API.Mapping
     {
         public MapProfile()
         {
+            CreateMap<City,  CityDto>().ReverseMap();
+            CreateMap<State,  StateDto>().ReverseMap();
             CreateMap<Country,  CountryDto>().ReverseMap();
             CreateMap<Category,  CategoryDto>().ReverseMap();
         }
