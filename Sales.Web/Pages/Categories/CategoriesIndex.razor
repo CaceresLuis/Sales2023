@@ -45,7 +45,7 @@
 
     private async Task LoadAsync()
     {
-        var httpResponse = await repository.Get<List<CategoryDto>>("api/categories");
+        var httpResponse = await repository.Get<List<CategoryDto>>("categories");
         Categories = httpResponse.Response;
     }
 
@@ -64,7 +64,7 @@
         if (string.IsNullOrEmpty(result.Value))
             return;
 
-        var httpResponse = await repository.Delete($"api/categories/id?id={id}");
+        var httpResponse = await repository.Delete($"categories/id?id={id}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();

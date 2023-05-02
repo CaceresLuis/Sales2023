@@ -5,7 +5,7 @@
 
 <h3>Paises</h3>
 
-<a class="btn btn-primary mb-3" href="/countries/create">Crear Pais <i class="oi oi-plus"></i></a>
+<a class="btn btn-primary mb-3" href="/countries/create"><i class="oi oi-plus"></i></a>
 
 <GenericList MyList="Countries">
     <Body>
@@ -49,7 +49,7 @@
 
     private async Task LoadAsync()
     {
-        var httpResponse = await repository.Get<List<CountryDto>>("api/countries");
+        var httpResponse = await repository.Get<List<CountryDto>>("countries");
         Countries = httpResponse.Response!;
     }
 
@@ -68,7 +68,7 @@
         if (string.IsNullOrEmpty(result.Value))
             return;
 
-        var httpResponse = await repository.Delete($"api/countries/id?id={id}");
+        var httpResponse = await repository.Delete($"countries/id?id={id}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();

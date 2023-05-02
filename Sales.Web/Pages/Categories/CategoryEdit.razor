@@ -23,7 +23,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var httpResponse = await repository.Get<CategoryDto>($"api/categories/id?id={Id}");
+        var httpResponse = await repository.Get<CategoryDto>($"categories/id?id={Id}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();
@@ -35,7 +35,7 @@ else
 
     private async Task EditAsync()
     {
-        var httpResponse = await repository.Put($"api/categories/id?id={Id}", category);
+        var httpResponse = await repository.Put($"categories/id?id={Id}", category);
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();

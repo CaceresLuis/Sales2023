@@ -18,7 +18,7 @@ namespace Sales.API.Infrastructure.Repositories
             return await _context.Countries.AnyAsync(c => c.Name == name);
         }
 
-        public async Task<IEnumerable<Country>> GetAllCountriesFullDataAsync()
+        public new async Task<IEnumerable<Country>> GetAllAsync()
         {
             return await _context.Countries
                 .Include(c => c.States)
@@ -31,6 +31,14 @@ namespace Sales.API.Infrastructure.Repositories
             return await _context.Countries
                 .Include(c => c.States)
                 .ToListAsync();
+        }
+
+        public new async Task<Country> GetByIdAsync(int id)
+        {
+            return await _context.Countries
+                .Include(c => c.States)
+                .ThenInclude(s => s.Cities)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }

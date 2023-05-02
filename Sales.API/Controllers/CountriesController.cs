@@ -32,7 +32,7 @@ namespace Sales.API.Controllers
         [HttpGet("Full")]
         public async Task<ActionResult<IEnumerable<CountryDto>>> GetFullsync()
         {
-            IEnumerable<Country> countries = await _countryRepository.GetAllCountriesFullDataAsync();
+            IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
             if (!countries.Any())
                 return NotFound("Aun no hay registro de paises");
 
@@ -46,7 +46,7 @@ namespace Sales.API.Controllers
             if (country is null)
                 return NotFound();
 
-            return Ok(country);
+            return Ok(_mapper.Map<CountryDto>(country));
         }
 
         [HttpPost]

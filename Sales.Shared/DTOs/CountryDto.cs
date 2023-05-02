@@ -13,5 +13,10 @@ namespace Sales.Shared.DTOs
 
         public ICollection<StateDto>? States { get; set; }
         public int StatesNumber => States == null ? 0 : States.Count;
+
+        public override string ToString()
+        {
+            return $"Id: {Id}, Name: {Name}, States: {States}";
+        }
     }
 }
