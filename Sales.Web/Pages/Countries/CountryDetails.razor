@@ -35,12 +35,10 @@ else
                             </td>
                             <td>
                                 @state.CitiesNumber
-                            </td><td>
-                                @state.CountryId
                             </td>
                             <td>
                                 <a class="btn btn-info" href="/states/details/@state.Id"><i class="oi oi-list"></i></a>
-                                <a class="btn btn-warning" href="/estates/edit/@state.Id"><i class="oi oi-pencil"></i></a>
+                                <a class="btn btn-warning" href="/states/edit/@state.Id"><i class="oi oi-pencil"></i></a>
                                 <button class="btn btn-danger" @onclick=@(() => DeleteAsync(state.Id))><i class="oi oi-trash"></i></button>
                             </td>
                         </tr>

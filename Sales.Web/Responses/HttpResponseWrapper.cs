@@ -35,6 +35,8 @@ namespace Sales.Web.Responses
                     return "Tienes que logearte para hacer esta operación";
                 case HttpStatusCode.Forbidden:
                     return "No tienes permisos para hacer esta operación";
+                case HttpStatusCode.InternalServerError:
+                    return await HttpResponseMessage.Content.ReadAsStringAsync();
                 default:
                     return "Ha ocurrido un error inesperado";
             }

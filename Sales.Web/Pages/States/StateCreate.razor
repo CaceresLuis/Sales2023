@@ -3,7 +3,7 @@
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
-<h3>Crear Estado</h3>
+<h3>Crear Estado/Departamento</h3>
 
 <StateForm @ref="stateForm" State="state" OnValidSubmit="Create" ReturnAction="Back"></StateForm>
 
@@ -13,11 +13,6 @@
 
     [Parameter]
     public int CountryId { get; set; }
-
-    protected override void OnInitialized()
-    {
-        Console.WriteLine($"{CountryId}");
-    }
 
     private async Task Create()
     {

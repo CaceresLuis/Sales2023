@@ -1,0 +1,60 @@
+﻿@page "/states/edit/{StateId:int}"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+<h3>Country Edit</h3>
+
+@if (state is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <StateForm @ref="stateForm" State="state" OnValidSubmit="EditAsync" ReturnAction="Back" />
+}
+
+@code {
+    private StateDto? state;
+    private StateForm? stateForm;
+
+    [Parameter]
+    public int StateId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpResponse = await repository.Get<StateDto>($"states/id?id={StateId}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            Back();
+        }
+
+        state = httpResponse.Response;
+    }
+
+    private async Task EditAsync()
+    {
+        var httpResponse = await repository.Put($"states/id?id={StateId}", state);
+        if (httpResponse.Error)
+        {
+            var mes = httpResponse.HttpResponseMessage;
+            Console.WriteLine(mes);
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        await sweetAlertService.FireAsync("Actualizado", "El Estado/Departamento fue Actualizado", SweetAlertIcon.Success);
+        Back();
+    }
+
+    private void Back()
+    {
+        stateForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo($"countries/details/{state!.CountryId}");
+    }
+
+
+}

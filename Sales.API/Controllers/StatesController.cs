@@ -2,7 +2,7 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Sales.API.Infrastructure.Exceptions;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
@@ -43,37 +43,26 @@ namespace Sales.API.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> AddState(StateDto stateDto)
         {
-            try
-            {
-                stateDto.Id = 0;
-                return Ok(await _stateRepository.AddAsync(_mapper.Map<State>(stateDto)));
-            }
-            catch (DbUpdateConcurrencyException e)
-            {
-                if(e.InnerException.Message.Contains("dupicate"))
-                    return BadRequest($"el estado: {stateDto.Name} ya esta registrado para este pais");
+            stateDto.Id = 0;
+            ErrorClass confirData = await _stateRepository.ExistStateInCountry(stateDto.CountryId, stateDto.Name);
+            if (confirData.Error)
+                return BadRequest(confirData.Message);
 
-                return BadRequest();
-            }
+            return Ok(await _stateRepository.AddAsync(_mapper.Map<State>(stateDto)));
+
         }
 
         [HttpPut("id")]
         public async Task<ActionResult<bool>> UpdateState(int id, StateDto stateDto)
         {
-            try
-            {
-                if (!ModelState.IsValid || stateDto.Id != id)
-                    return BadRequest("Datos invalidos");
+            if (!ModelState.IsValid || stateDto.Id != id)
+                return BadRequest("Datos invalidos");
 
-                return Ok(await _stateRepository.UpdateAsync(_mapper.Map<State>(stateDto)));
-            }
-            catch (DbUpdateConcurrencyException e)
-            {
-                if (e.InnerException.Message.Contains("dupicate"))
-                    return BadRequest($"el estado: {stateDto.Name} ya esta registrado para este pais");
+            ErrorClass confirData = await _stateRepository.ExistStateInCountry(stateDto.CountryId, stateDto.Name);
+            if (confirData.Error)
+                return BadRequest(confirData.Message);
 
-                return BadRequest();
-            }
+            return Ok(await _stateRepository.UpdateAsync(_mapper.Map<State>(stateDto)));
         }
 
         [HttpDelete("id")]
