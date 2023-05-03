@@ -4,6 +4,7 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Sales.API.Infrastructure.Exceptions;
 
 namespace Sales.API.Controllers
 {
@@ -43,37 +44,25 @@ namespace Sales.API.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> AddCity(CityDto cityDto)
         {
-            try
-            {
-                cityDto.Id = 0;
-                return Ok(await _cityRepository.AddAsync(_mapper.Map<City>(cityDto)));
-            }
-            catch (DbUpdateConcurrencyException e)
-            {
-                if (e.InnerException.Message.Contains("dupicate"))
-                    return BadRequest($"La ciudad: {cityDto.Name} ya esta registrado para este Estado");
+            cityDto.Id = 0;
+            ErrorClass confirData = await _cityRepository.ExistCityInStateAsync(cityDto.StateId, cityDto.Name);
+            if (confirData.Error)
+                return BadRequest(confirData.Message);
 
-                return BadRequest();
-            }
+            return Ok(await _cityRepository.AddAsync(_mapper.Map<City>(cityDto)));
         }
 
         [HttpPut("id")]
         public async Task<ActionResult<bool>> UpdateState(int id, CityDto cityDto)
         {
-            try
-            {
-                if (!ModelState.IsValid || cityDto.Id != id)
-                    return BadRequest("Datos invalidos");
+            if (!ModelState.IsValid || cityDto.Id != id)
+                return BadRequest("Datos invalidos");
 
-                return Ok(await _cityRepository.UpdateAsync(_mapper.Map<City>(cityDto)));
-            }
-            catch (DbUpdateConcurrencyException e)
-            {
-                if (e.InnerException.Message.Contains("dupicate"))
-                    return BadRequest($"La ciudad: {cityDto.Name} ya esta registrado para este Estado");
+            ErrorClass confirData = await _cityRepository.ExistCityInStateAsync(cityDto.StateId, cityDto.Name);
+            if (confirData.Error)
+                return BadRequest(confirData.Message);
 
-                return BadRequest();
-            }
+            return Ok(await _cityRepository.UpdateAsync(_mapper.Map<City>(cityDto)));
         }
 
         [HttpDelete("id")]

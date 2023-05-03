@@ -1,29 +1,29 @@
-﻿@page "/states/edit/{StateId:int}"
+﻿@page "/cities/edit/{cityId:int}"
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
 <h3>Country Edit</h3>
 
-@if (state is null)
+@if (city is null)
 {
     <p>Cargando...</p>
 }
 else
 {
-    <StateForm @ref="stateForm" State="state" OnValidSubmit="EditAsync" ReturnAction="Back" />
+    <CityForm @ref="cityForm" City="city" OnValidSubmit="EditAsync" ReturnAction="Back" />
 }
 
 @code {
-    private StateDto? state;
-    private StateForm? stateForm;
+    private CityDto? city;
+    private CityForm? cityForm;
 
     [Parameter]
-    public int StateId { get; set; }
+    public int cityId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var httpResponse = await repository.Get<StateDto>($"states/id?id={StateId}");
+        var httpResponse = await repository.Get<CityDto>($"cities/id?id={cityId}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();
@@ -31,28 +31,26 @@ else
             Back();
         }
 
-        state = httpResponse.Response;
+        city = httpResponse.Response;
     }
 
     private async Task EditAsync()
     {
-        var httpResponse = await repository.Put($"states/id?id={StateId}", state);
+        var httpResponse = await repository.Put($"cities/id?id={cityId}", city);
         if (httpResponse.Error)
         {
-            var mes = httpResponse.HttpResponseMessage;
-            Console.WriteLine(mes);
             string? message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
-        await sweetAlertService.FireAsync("Actualizado", "El Estado/Departamento fue Actualizado", SweetAlertIcon.Success);
+        await sweetAlertService.FireAsync("Actualizado", "Laciudad fue Actualizada", SweetAlertIcon.Success);
         Back();
     }
 
     private void Back()
     {
-        stateForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo($"countries/details/{state!.CountryId}");
+        cityForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo($"states/details/{city!.StateId}");
     }
 }

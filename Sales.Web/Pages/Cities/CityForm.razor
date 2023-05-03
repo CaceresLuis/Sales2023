@@ -1,0 +1,60 @@
+﻿@inject SweetAlertService sweetAlertService
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>Nombre:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="City.Name" />
+            <ValidationMessage For="@(() => City.Name)" />
+        </div>
+    </div>
+    <button class="btn btn-success" type="submit"><i class="oi oi-circle-check"></i></button>
+    <button class="btn btn-dark" @onclick="ReturnAction"><i class="oi oi-arrow-thick-left"></i></button>
+</EditForm>
+
+@code {
+
+    private EditContext editContext { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public CityDto City { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback ReturnAction { get; set; }
+
+    public bool FormPostedSuccessfully { get; set; }
+
+    protected override void OnInitialized()
+    {
+        editContext = new(City);
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var formWasModified = editContext.IsModified();
+        if (!formWasModified || FormPostedSuccessfully)
+            return;
+
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmacion",
+                Text = "Deseas abandonar la pagina y perder los cambios?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                CancelButtonText = "No",
+                ConfirmButtonText = "Si"
+            });
+
+        if (!string.IsNullOrEmpty(result.Value)) return;
+
+        context.PreventNavigation();
+    }
+}

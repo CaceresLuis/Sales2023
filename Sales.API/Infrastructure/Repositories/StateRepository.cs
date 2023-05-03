@@ -1,8 +1,8 @@
 ﻿using Sales.API.Data;
 using Sales.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using Sales.API.Infrastructure.Repositories.Interfaces;
 using Sales.API.Infrastructure.Exceptions;
+using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Infrastructure.Repositories
 {
@@ -34,12 +34,12 @@ namespace Sales.API.Infrastructure.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<ErrorClass> ExistStateInCountry(int idCountry, string nameState)
+        public async Task<ErrorClass> ExistStateInCountry(int countryId, string nameState)
         {
-            if (!await _context.States.AnyAsync(s => s.CountryId == idCountry))
+            if (!await _context.States.AnyAsync(s => s.CountryId == countryId))
                 return new ErrorClass { Error = true, Message = "El pais no existe"};
 
-            if(await _context.States.AnyAsync(s => s.Name == nameState && s.CountryId == idCountry))
+            if(await _context.States.AnyAsync(s => s.Name == nameState && s.CountryId == countryId))
                 return new ErrorClass { Error = true, Message = $"El Estado/Departamento {nameState} ya esta registrado para este pais" };
             
             return new ErrorClass { Error = false, Message = "OK" };
