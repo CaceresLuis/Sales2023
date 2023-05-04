@@ -16,10 +16,13 @@
 
     private async Task Create()
     {
+        Console.WriteLine(StateId);
         city.StateId = StateId;
         var httpResponse = await repository.Post("cities", city);
         if (httpResponse.Error)
         {
+
+            Console.WriteLine(city);
             string? message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;

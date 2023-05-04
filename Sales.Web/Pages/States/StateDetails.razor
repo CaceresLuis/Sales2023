@@ -33,7 +33,7 @@ else
 
                             <td>
                                 <a class="btn btn-warning" href="/cities/edit/@city.Id"><i class="oi oi-pencil"></i></a>
-                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(state.Id))><i class="oi oi-trash"></i></button>
+                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))><i class="oi oi-trash"></i></button>
                             </td>
                         </tr>
                     }
@@ -84,7 +84,7 @@ else
         if (string.IsNullOrEmpty(result.Value))
             return;
 
-        var httpResponse = await repository.Delete($"city/id?id={id}");
+        var httpResponse = await repository.Delete($"cities/id?id={id}");
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();

@@ -36,7 +36,7 @@ namespace Sales.API.Infrastructure.Repositories
 
         public async Task<ErrorClass> ExistStateInCountry(int countryId, string nameState)
         {
-            if (!await _context.States.AnyAsync(s => s.CountryId == countryId))
+            if (!await _context.Countries.AnyAsync(c => c.Id == countryId))
                 return new ErrorClass { Error = true, Message = "El pais no existe"};
 
             if(await _context.States.AnyAsync(s => s.Name == nameState && s.CountryId == countryId))
