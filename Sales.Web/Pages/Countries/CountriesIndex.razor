@@ -5,16 +5,17 @@
 
 <h3>Paises</h3>
 
-<a class="btn btn-primary mb-3" href="/countries/create"><i class="oi oi-plus"></i></a>
+<Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
 
+<a class="btn btn-primary mb-3" href="/countries/create"><i class="oi oi-plus"></i></a>
 <GenericList MyList="Countries">
     <Body>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Pais</th>
-                    <th>Estados / Departamentos</th>
-                    <th></th>
+                    <th style="width:220px">Estados / Departamentos</th>
+                    <th style="width:260px"></th>
                 </tr>
             </thead>
             <tbody>
@@ -41,16 +42,29 @@
 
 @code {
     public List<CountryDto>? Countries { get; set; }
+    private int currentPage = 1;
+    private int totalPages;
 
     protected async override Task OnInitializedAsync()
     {
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
+    private async Task SelectedPageAsync(int page)
     {
-        var httpResponse = await repository.Get<List<CountryDto>>("countries");
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        string url1 = $"countries?page={page}";
+        string url2 = "countries/totalPages";
+
+        var httpResponse = await repository.Get<List<CountryDto>>(url1);
+        var httpResponse2 = await repository.Get<int>(url2);
         Countries = httpResponse.Response!;
+        totalPages = httpResponse2.Response!;
     }
 
     private async Task DeleteAsync(int id)

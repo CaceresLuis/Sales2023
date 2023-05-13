@@ -21,9 +21,9 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StateDto>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<StateDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
-            IEnumerable<State> states = await _stateRepository.GetAllWhitEstatesAsync();
+            IEnumerable<State> states = await _stateRepository.GetAllAsync(pagination);
             if (!states.Any())
                 return NotFound("Aun no hay registro de Estados");
 
@@ -73,6 +73,13 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(await _stateRepository.DeleteAsync(state));
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
+        {
+            double get = await _stateRepository.GetPages(pagination);
+            return Ok(get);
         }
     }
 }

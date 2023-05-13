@@ -1,4 +1,5 @@
-﻿using Sales.API.Data.Entities;
+﻿using Sales.Shared.DTOs;
+using Sales.API.Data.Entities;
 using Sales.API.Infrastructure.Exceptions;
 
 namespace Sales.API.Infrastructure.Repositories.Interfaces
@@ -6,7 +7,8 @@ namespace Sales.API.Infrastructure.Repositories.Interfaces
     public interface IStateRepository : IRepository<State>
     {
         Task<State> GetByIdWhitEstatesAsync(int id);
-        Task<IEnumerable<State>> GetAllWhitEstatesAsync();
         Task<ErrorClass> ExistStateInCountry(int countryId, string nameState);
+        Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination);
+        Task<double> GetPages(PaginationDto pagination);
     }
 }

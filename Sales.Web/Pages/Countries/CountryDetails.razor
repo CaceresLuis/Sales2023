@@ -9,6 +9,9 @@
 }
 else
 {
+
+    <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
+
     <h3>@country.Name</h3>
     <div class="mb-2">
         <a class="btn btn-dark mb-3" href="/countries"><i class="oi oi-arrow-thick-left"></i></a>
@@ -19,8 +22,8 @@ else
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Estado / Departamento</th>
-                        <th>Ciudades</th>
+                        <th style="width:220px">Estados / Departamentos</th>
+                        <th style="width:260px">Ciudad</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -50,27 +53,38 @@ else
 @code {
     private CountryDto? country;
     private List<StateDto>? states;
+    private int currentPage = 1;
+    private int totalPages;
 
-    [Parameter]
-    public int Id { get; set; }
+    [Parameter] public int Id { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
+    private async Task SelectedPageAsync(int page)
     {
-        var httpResponse = await repository.Get<CountryDto>($"countries/id?id={Id}");
-        if (httpResponse.Error)
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        var httpResponseCountry = await repository.Get<CountryDto>($"countries/id?id={Id}");
+        var httpResponseStates = await repository.Get<List<StateDto>>($"States?id={Id}&page={page}");
+        var httpResponsePages = await repository.Get<int>($"States/totalPages?id={Id}");
+
+        if (httpResponseCountry.Error)
         {
-            var message = await httpResponse.GetErrorMessageAsync();
+            var message = await httpResponseCountry.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
-        country = httpResponse.Response;
-        states = country!.States!.ToList();
+        country = httpResponseCountry.Response;
+        states = httpResponseStates.Response;
+        totalPages = httpResponsePages.Response;
     }
 
     private async Task DeleteAsync(int id)

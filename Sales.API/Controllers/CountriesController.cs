@@ -20,23 +20,13 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
-            IEnumerable<Country> countries = await _countryRepository.GetAllCountriesWhitEstatesAsync();
+            IEnumerable<Country> countries = await _countryRepository.GetAllAsync(pagination);
             if (!countries.Any())
                 return NotFound("Aun no hay registro de paises");
 
-            return Ok(_mapper.Map<IEnumerable<CountryDto>>(countries));
-        }
-
-        [HttpGet("Full")]
-        public async Task<ActionResult<IEnumerable<CountryDto>>> GetFullsync()
-        {
-            IEnumerable<Country> countries = await _countryRepository.GetAllAsync();
-            if (!countries.Any())
-                return NotFound("Aun no hay registro de paises");
-
-            return Ok(_mapper.Map<IEnumerable<CountryDto>>(countries));
+            return Ok(_mapper.Map<List<CountryDto>>(countries));
         }
 
         [HttpGet("id")]
@@ -80,6 +70,13 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(await _countryRepository.DeleteAsync(country));
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
+        {
+            double get = await _countryRepository.GetPages(pagination);
+            return Ok(get);
         }
     }
 }

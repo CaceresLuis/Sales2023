@@ -9,6 +9,8 @@
 }
 else
 {
+    <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
+
     <h3>@state.Name</h3>
     <div class="mb-2">
         <a class="btn btn-dark mb-3" href="/countries/details/@state.CountryId"><i class="oi oi-arrow-thick-left"></i></a>
@@ -46,28 +48,39 @@ else
 @code {
     private StateDto? state;
     private List<CityDto>? cities;
+    private int currentPage = 1;
+    private int totalPages;
 
-    [Parameter]
-    public int StateId { get; set; }
+    [Parameter] public int StateId { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
+    private async Task SelectedPageAsync(int page)
     {
-        var httpResponse = await repository.Get<StateDto>($"states/id?id={StateId}");
-        if (httpResponse.Error)
+        currentPage = page;
+        await LoadAsync(page);
+    }
+
+    private async Task LoadAsync(int page = 1)
+    {
+        var httpResponseState = await repository.Get<StateDto>($"states/id?id={StateId}");
+        var httpResponseCities = await repository.Get<List<CityDto>>($"Cities?id={StateId}&page={page}");
+        var httpResponsePages = await repository.Get<int>($"Cities/totalpages?id={StateId}");
+        if (httpResponseState.Error)
         {
-            var message = await httpResponse.GetErrorMessageAsync();
+            var message = await httpResponseState.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
 
-        state = httpResponse.Response;
-        cities = state!.Cities!.ToList();
+        state = httpResponseState.Response;
+        cities = httpResponseCities.Response;
+        totalPages = httpResponsePages.Response;
     }
+
 
     private async Task DeleteAsync(int id)
     {

@@ -1,438 +1,86 @@
-﻿using Sales.API.Data.Entities;
+﻿using Sales.Shared.Responses;
+using Sales.API.Data.Entities;
+using Sales.API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sales.API.Data
 {
     public class SeedDb
     {
+        private readonly IApiService _apiService;
         private readonly SalesDataContex _context;
 
-        public SeedDb(SalesDataContex context)
+        public SeedDb(SalesDataContex context, IApiService apiService)
         {
             _context = context;
+            _apiService = apiService;
         }
 
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
             await CheckAsync();
-            //await CheckCategoriesAsync();
         }
 
         private async Task CheckAsync()
         {
             if (!_context.Countries.Any())
             {
-                _context.Countries.Add(new Country 
+                Response responseCountries = await _apiService.GetListAsync<CountryResponse>("/v1", "/countries");
+                if (responseCountries.IsSuccess)
                 {
-                    Name = "El Salvador",
-                    States = new List<State>
+                    List<CountryResponse> countries = (List<CountryResponse>)responseCountries.Result!;
+                    foreach (CountryResponse countryResponse in countries)
                     {
-                        new State
+                        Country country = await _context.Countries!.FirstOrDefaultAsync(c => c.Name == countryResponse.Name!)!;
+                        if (country == null)
                         {
-                            Name = "Usulutan",
-                            Cities = new List<City>
+                            country = new() { Name = countryResponse.Name!, States = new List<State>() };
+                            Response responseStates = await _apiService.GetListAsync<StateResponse>("/v1", $"/countries/{countryResponse.Iso2}/states");
+                            if (responseStates.IsSuccess)
                             {
-                                new City { Name = "Jiquilisco"},
-                                new City { Name = "Usulutan"},
-                                new City { Name = "Berlin"} 
+                                List<StateResponse> states = (List<StateResponse>)responseStates.Result!;
+                                foreach (StateResponse stateResponse in states!)
+                                {
+                                    State state = country.States!.FirstOrDefault(s => s.Name == stateResponse.Name!)!;
+                                    if (state == null)
+                                    {
+                                        state = new() { Name = stateResponse.Name!, Cities = new List<City>() };
+                                        Response responseCities = await _apiService.GetListAsync<CityResponse>("/v1", $"/countries/{countryResponse.Iso2}/states/{stateResponse.Iso2}/cities");
+                                        if (responseCities.IsSuccess)
+                                        {
+                                            List<CityResponse> cities = (List<CityResponse>)responseCities.Result!;
+                                            foreach (CityResponse cityResponse in cities)
+                                            {
+                                                if (cityResponse.Name == "Mosfellsbær" || cityResponse.Name == "Șăulița")
+                                                {
+                                                    continue;
+                                                }
+                                                City city = state.Cities!.FirstOrDefault(c => c.Name == cityResponse.Name!)!;
+                                                if (city == null)
+                                                {
+                                                    state.Cities.Add(new City() { Name = cityResponse.Name! });
+                                                }
+                                            }
+                                        }
+                                        if (state.CitiesNumber > 0)
+                                        {
+                                            country.States.Add(state);
+                                        }
+                                    }
+                                }
                             }
-                        },
-                         new State
-                        {
-                            Name = "San Salvador",
-                            Cities = new List<City>
+                            if (country.StatesNumber > 0)
                             {
-                                new City { Name = "San Salvador"},
-                                new City { Name = "Soyapango"},
+                                _context.Countries.Add(country);
                             }
-                        },
-                         new State
-                        {
-                            Name = "San Miguel",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "San Miguel"},
-                                new City { Name = "Chapeltique"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                {
-                    Name = "Costa Rica",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Alajuela",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Alajuela"},
-                                new City { Name = "San Ramón"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Cartago",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Cartago"},
-                                new City { Name = "Paraíso"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Puntarenas",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Puntarenas"},
-                                new City { Name = "Quepos"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country
-                {
-                    Name = "Guatemala",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Alta Verapaz",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Cobán"},
-                                new City { Name = "San Pedro Carchá"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Chimaltenango",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Chimaltenango"},
-                                new City { Name = "San Juan Comalapa"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "El Progreso",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Guastatoya"},
-                                new City { Name = "Sanarate"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Honduras",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Cortés",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "San Pedro Sula"},
-                                new City { Name = "Puerto Cortés"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Francisco Morazán",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Tegucigalpa"},
-                                new City { Name = "Comayagüela"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Gracias a Dios",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Puerto Lempira"},
-                                new City { Name = "Brus Laguna"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country
-                {
-                    Name = "Nicaragua",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Chinandega",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Chinandega"},
-                                new City { Name = "Corinto"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "León",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "León"},
-                                new City { Name = "La Paz Centro"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Rivas",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Rivas"},
-                                new City { Name = "Potosí"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                {
-                    Name = "Panamá",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Colón",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Colón"},
-                                new City { Name = "Portobelo"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Herrera",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Chitré"},
-                                new City { Name = "Santo Domingo"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Panamá Oeste",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "La Chorrera"},
-                                new City { Name = "Capira"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Argentina",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Buenos Aires",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Buenos Aires"},
-                                new City { Name = "La Plata"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Córdoba",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Córdoba"},
-                                new City { Name = "Villa Carlos Paz"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Mendoza",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Mendoza"},
-                                new City { Name = "San Rafael"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Brasil",
-                    States = new List<State>
-                    {
-                        new State
-                        {
-                            Name = "Rio de Janeiro",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Rio de Janeiro"},
-                                new City { Name = "Niterói"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "São Paulo",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "São Paulo"},
-                                new City { Name = "Guarulhos"},
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Mendoza",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Salvador"},
-                                new City { Name = "Camaçari"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "España",
-                    States = new List<State>
-                    {
-                         new State
-                        {
-                            Name = "Barcelona",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Barcelona"},
-                                new City { Name = "Hospitalet de Llobregat"},
-                            }
-                        },
-                        new State
-                        {
-                            Name = "Madrid",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Madrid"},
-                                new City { Name = "Alcalá de Henares"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Valencia",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Valencia"},
-                                new City { Name = "Castelló de la Plana"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Inglaterra",
-                    States = new List<State>
-                    {
-                         new State
-                        {
-                            Name = "Londres",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Londres"},
-                                new City { Name = "Birmingham"},
-                            }
-                        },
-                        new State
-                        {
-                            Name = "Liverpool",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Liverpool"},
-                                new City { Name = "Manchester"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Newcastle",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Newcastle"},
-                                new City { Name = "Sunderland"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Colombia",
-                    States = new List<State>
-                    {
-                         new State
-                        {
-                            Name = "Bogotá",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Bogotá"},
-                                new City { Name = "Soacha"},
-                            }
-                        },
-                        new State
-                        {
-                            Name = "Antioquia",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Medellín"},
-                                new City { Name = "Envigado"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Valle del Cauca",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Cali"},
-                                new City { Name = "Yumbo"},
-                            }
-                        },
-                    }
-                });
-                _context.Countries.Add(new Country 
-                { 
-                    Name = "Estados Unidos",
-                    States = new List<State>
-                    {
-                         new State
-                        {
-                            Name = "California",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Los Angeles"},
-                                new City { Name = "San Francisco"},
-                            }
-                        },
-                        new State
-                        {
-                            Name = "Texas",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Houston"},
-                                new City { Name = "Austin"}
-                            }
-                        },
-                         new State
-                        {
-                            Name = "Florida",
-                            Cities = new List<City>
-                            {
-                                new City { Name = "Miami"},
-                                new City { Name = "Orlando"},
-                            }
-                        },
-                    }
-                });
 
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
             }
+
 
             if (!_context.Categories.Any())
             {
@@ -446,7 +94,7 @@ namespace Sales.API.Data
                 _context.Categories.Add(new Category { Name = "Automovil" });
             }
 
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

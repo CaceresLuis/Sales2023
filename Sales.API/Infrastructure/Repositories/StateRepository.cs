@@ -1,4 +1,6 @@
 ﻿using Sales.API.Data;
+using Sales.Shared.DTOs;
+using Sales.API.Helpers;
 using Sales.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Exceptions;
@@ -14,11 +16,12 @@ namespace Sales.API.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<State>> GetAllWhitEstatesAsync()
+        public async Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination)
         {
-            return await _context.States
-                .Include(s => s.Cities)
-                .ToListAsync();
+            IQueryable<State> queriable = _context.States.Include(s => s.Cities)
+                .Where(s => s.CountryId == pagination.Id).AsQueryable();
+
+            return await queriable.OrderBy(s => s.Name).Paginate(pagination).ToListAsync();
         }
 
         public async Task<State> GetByIdWhitEstatesAsync(int id)
@@ -26,12 +29,6 @@ namespace Sales.API.Infrastructure.Repositories
             return await _context.States
                 .Include(s => s.Cities)
                 .FirstOrDefaultAsync(s => s.Id == id);
-        }
-
-        public new async Task<bool> UpdateAsync(State state)
-        {
-            _context.Update(state);
-            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<ErrorClass> ExistStateInCountry(int countryId, string nameState)
@@ -43,6 +40,14 @@ namespace Sales.API.Infrastructure.Repositories
                 return new ErrorClass { Error = true, Message = $"El Estado/Departamento {nameState} ya esta registrado para este pais" };
             
             return new ErrorClass { Error = false, Message = "OK" };
+        }
+
+        public async Task<double> GetPages(PaginationDto pagination)
+        {
+            IQueryable<State> queryable = _context.States.Where(s => s.CountryId == pagination.Id).AsQueryable();
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return totalPages;
         }
     }
 }

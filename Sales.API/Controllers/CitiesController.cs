@@ -2,9 +2,8 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Sales.API.Infrastructure.Repositories.Interfaces;
 using Sales.API.Infrastructure.Exceptions;
+using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
 {
@@ -22,9 +21,9 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CityDto>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<CityDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
-            IEnumerable<City> city = await _cityRepository.GetAllAsync();
+            IEnumerable<City> city = await _cityRepository.GetAllAsync(pagination);
             if (!city.Any())
                 return NotFound("Aun no hay registro de Ciudades");
 
@@ -73,6 +72,13 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(await _cityRepository.DeleteAsync(city));
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
+        {
+            double get = await _cityRepository.GetPages(pagination);
+            return Ok(get);
         }
     }
 }
