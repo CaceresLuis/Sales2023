@@ -1,4 +1,6 @@
 ﻿using Sales.API.Data;
+using Sales.Shared.DTOs;
+using Sales.API.Helpers;
 using Sales.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Repositories.Interfaces;
@@ -11,6 +13,26 @@ namespace Sales.API.Infrastructure.Repositories
         public CategoryRepository(SalesDataContex context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<IEnumerable<Category>> GetAllAsync(PaginationDto pagination)
+        {
+            IQueryable<Category> queriable = _context.Categories.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
+            return await queriable.OrderBy(c => c.Name).Paginate(pagination).ToListAsync();
+        }
+
+        public async Task<double> GetPages(PaginationDto pagination)
+        {
+            IQueryable<Category> queriable = _context.Categories.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
+            double count = await queriable.CountAsync();
+            return Math.Ceiling(count / pagination.RecordsNumber);
         }
 
         public async Task<bool> CategoryExisteAsysn(string name)

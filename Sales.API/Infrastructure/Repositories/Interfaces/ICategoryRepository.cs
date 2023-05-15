@@ -1,9 +1,12 @@
-﻿using Sales.API.Data.Entities;
+﻿using Sales.Shared.DTOs;
+using Sales.API.Data.Entities;
 
 namespace Sales.API.Infrastructure.Repositories.Interfaces
 {
     public interface ICategoryRepository : IRepository<Category>
     {
         Task<bool> CategoryExisteAsysn(string name);
+        Task<IEnumerable<Category>> GetAllAsync(PaginationDto pagination);
+        Task<double> GetPages(PaginationDto pagination);
     }  
 }

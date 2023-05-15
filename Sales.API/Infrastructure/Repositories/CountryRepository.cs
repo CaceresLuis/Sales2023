@@ -19,6 +19,9 @@ namespace Sales.API.Infrastructure.Repositories
         {
             IQueryable<Country> queriable = _context.Countries.Include(x => x.States).AsQueryable();
 
+            if(!string.IsNullOrWhiteSpace(pagination.Filter)) 
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
             return await queriable.OrderBy(c => c.Name).Paginate(pagination).ToListAsync();
         }
 
@@ -32,8 +35,12 @@ namespace Sales.API.Infrastructure.Repositories
 
         public async Task<double> GetPages(PaginationDto pagination)
         {
-            IQueryable<Country> queryable = _context.Countries.AsQueryable();
-            double count = await queryable.CountAsync();
+            IQueryable<Country> queriable = _context.Countries.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
+            double count = await queriable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return totalPages;
         }

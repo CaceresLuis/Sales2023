@@ -22,7 +22,7 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
-            IEnumerable<Country> countries = await _countryRepository.GetAllAsync(pagination);
+             IEnumerable<Country> countries = await _countryRepository.GetAllAsync(pagination);
             if (!countries.Any())
                 return NotFound("Aun no hay registro de paises");
 

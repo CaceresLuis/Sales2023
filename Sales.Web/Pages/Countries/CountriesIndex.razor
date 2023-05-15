@@ -4,10 +4,21 @@
 @inject SweetAlertService sweetAlertService
 
 <h3>Paises</h3>
+<div class="mb-2" style="display:flex; flex-wrap:wrap; align-items:center">
+    <div>
+        <a class="btn btn-primary mb-3" href="/countries/create">Nuevo pais <i class="oi oi-plus"></i></a>
+    </div>
+    <div class="mx-2">
+        <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync">Filtrar</button>
+        <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync">Limpiar</button>
+    </div>
+</div>
 
 <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
 
-<a class="btn btn-primary mb-3" href="/countries/create"><i class="oi oi-plus"></i></a>
 <GenericList MyList="Countries">
     <Body>
         <table class="table table-striped">
@@ -45,6 +56,13 @@
     private int currentPage = 1;
     private int totalPages;
 
+    [Parameter] 
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = "";
+    [Parameter] 
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; } = "";
+
     protected async override Task OnInitializedAsync()
     {
         await LoadAsync();
@@ -58,13 +76,35 @@
 
     private async Task LoadAsync(int page = 1)
     {
-        string url1 = $"countries?page={page}";
-        string url2 = "countries/totalPages";
+        if (!string.IsNullOrWhiteSpace(Page))
+            page = Convert.ToInt32(Page);
 
-        var httpResponse = await repository.Get<List<CountryDto>>(url1);
-        var httpResponse2 = await repository.Get<int>(url2);
-        Countries = httpResponse.Response!;
-        totalPages = httpResponse2.Response!;
+        string url1 = string.Empty;
+        string url2 = string.Empty;
+
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url1 = $"countries?page={page}";
+            url2 = "countries/totalPages";
+        }
+        else
+        {
+            url1 = $"countries?page={page}&filter={Filter}";
+            url2 = $"countries/totalPages?filter={Filter}";
+        }
+
+        var httpResponseCountry = await repository.Get<List<CountryDto>>(url1);
+        var httpResponsePages = await repository.Get<int>(url2);
+
+        if (httpResponseCountry.Error)
+        {
+            var message = await httpResponseCountry.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        Countries = httpResponseCountry.Response!;
+        totalPages = httpResponsePages.Response!;
     }
 
     private async Task DeleteAsync(int id)
@@ -91,6 +131,19 @@
         }
         await sweetAlertService.FireAsync("Borrado", "El pais fue borrado", SweetAlertIcon.Success);
         await LoadAsync();
+    }
+
+    private async Task CleanFiltrAync()
+    {
+        Filter = string.Empty;
+        await ApplyFilterAsync();
+    }
+
+    private async Task ApplyFilterAsync()
+    {
+        int page = 1;
+        await LoadAsync(page);
+        await SelectedPageAsync(page);
     }
 }
 

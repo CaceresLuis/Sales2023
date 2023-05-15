@@ -1,10 +1,10 @@
 ﻿using Sales.API.Data;
 using Sales.Shared.DTOs;
+using Sales.API.Helpers;
 using Sales.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Infrastructure.Exceptions;
 using Sales.API.Infrastructure.Repositories.Interfaces;
-using Sales.API.Helpers;
 
 namespace Sales.API.Infrastructure.Repositories
 {
@@ -17,13 +17,20 @@ namespace Sales.API.Infrastructure.Repositories
         {
             IQueryable<City> queriable = _context.Cities.Where(c => c.StateId == pagination.Id).AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
             return await queriable.OrderBy(s => s.Name).Paginate(pagination).ToListAsync();
         }
 
         public async Task<double> GetPages(PaginationDto pagination)
         {
-            IQueryable<City> queryable = _context.Cities.Where(c => c.StateId == pagination.Id).AsQueryable();
-            double count = await queryable.CountAsync();
+            IQueryable<City> queriable = _context.Cities.Where(c => c.StateId == pagination.Id).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
+            double count = await queriable.CountAsync();
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return totalPages;
         }

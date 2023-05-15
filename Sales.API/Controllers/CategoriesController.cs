@@ -3,6 +3,7 @@ using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Sales.API.Infrastructure.Repositories;
 
 namespace Sales.API.Controllers
 {
@@ -20,9 +21,9 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllAsync([FromQuery]PaginationDto pagination)
         {
-            IEnumerable<Category> categories = await _categoryRepository.GetAllAsync();
+            IEnumerable<Category> categories = await _categoryRepository.GetAllAsync(pagination);
             if (!categories.Any())
                 return NotFound("Aun no hay registro de categorias");
 
@@ -70,6 +71,13 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(await _categoryRepository.DeleteAsync(category));
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
+        {
+            double get = await _categoryRepository.GetPages(pagination);
+            return Ok(get);
         }
     }
 }
