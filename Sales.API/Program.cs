@@ -5,6 +5,9 @@ using Sales.API.Services.Interfaces;
 using System.Text.Json.Serialization;
 using Sales.API.Infrastructure.Repositories;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Sales.API.Data.Entities;
+using Sales.API.Helpers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +21,24 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddTransient<SeedDb>();
 builder.Services.AddScoped<IApiService, Apiservice>();
-
+builder.Services.AddScoped<IUserHelper, UserHelper>();
 
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IStateRepository, StateRepository>();
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+builder.Services.AddIdentity<User, IdentityRole>(x =>
+{
+    x.User.RequireUniqueEmail = true;
+    x.Password.RequireDigit = false;
+    x.Password.RequiredUniqueChars = 0;
+    x.Password.RequireLowercase = false;
+    x.Password.RequireNonAlphanumeric = false;
+    x.Password.RequireUppercase = false;
+})
+    .AddEntityFrameworkStores<SalesDataContex>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddCors(options =>
 {
@@ -52,6 +67,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors();
 app.MapControllers();

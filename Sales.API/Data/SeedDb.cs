@@ -2,6 +2,8 @@
 using Sales.API.Data.Entities;
 using Sales.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Sales.API.Helpers;
+using Sales.Shared.Enums;
 
 namespace Sales.API.Data
 {
@@ -9,17 +11,51 @@ namespace Sales.API.Data
     {
         private readonly IApiService _apiService;
         private readonly SalesDataContex _context;
+        private readonly IUserHelper _userHelper;
 
-        public SeedDb(SalesDataContex context, IApiService apiService)
+        public SeedDb(SalesDataContex context, IApiService apiService, IUserHelper userHelper)
         {
             _context = context;
             _apiService = apiService;
+            _userHelper = userHelper;
         }
 
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
             await CheckAsync();
+            await CheckRolesAsync();
+            await CheckUserAsync("200", "Luis", "Caceres", "lccacers00@gmail.com", "76769136", "Jiqui", UserType.Admin);
+        }
+
+        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
+        {
+            var user = await _userHelper.GetUserAsync(email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Document = document,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    UserName = email,
+                    PhoneNumber = phone,
+                    Address = address,
+                    City = _context.Cities.FirstOrDefault(c => c.Name == "Jiquilisco"),
+                    UserType = userType
+                };
+
+                await _userHelper.AddUserAsync(user, "123456");
+                await _userHelper.AddUserToRoleAsync(user, userType.ToString());
+            }
+            return user;
+        }
+
+        private async Task CheckRolesAsync()
+        {
+            await _userHelper.CheckRoleAsync(UserType.Admin.ToString());
+            await _userHelper.CheckRoleAsync(UserType.User.ToString());
         }
 
         private async Task CheckAsync()
@@ -30,16 +66,23 @@ namespace Sales.API.Data
                 if (responseCountries.IsSuccess)
                 {
                     List<CountryResponse> countries = (List<CountryResponse>)responseCountries.Result!;
+                    if(countries.Count > 50) 
+                        countries = countries.Skip(50).Take(100).ToList();
+
                     foreach (CountryResponse countryResponse in countries)
                     {
                         Country country = await _context.Countries!.FirstOrDefaultAsync(c => c.Name == countryResponse.Name!)!;
                         if (country == null)
                         {
-                            country = new() { Name = countryResponse.Name!, States = new List<State>() };
+                            country = new()
+                            { Name = countryResponse.Name!, States = new List<State>() };
                             Response responseStates = await _apiService.GetListAsync<StateResponse>("/v1", $"/countries/{countryResponse.Iso2}/states");
                             if (responseStates.IsSuccess)
                             {
                                 List<StateResponse> states = (List<StateResponse>)responseStates.Result!;
+                                if(states.Count > 50)
+                                     states = states.Take(50).ToList();
+
                                 foreach (StateResponse stateResponse in states!)
                                 {
                                     State state = country.States!.FirstOrDefault(s => s.Name == stateResponse.Name!)!;
@@ -50,6 +93,9 @@ namespace Sales.API.Data
                                         if (responseCities.IsSuccess)
                                         {
                                             List<CityResponse> cities = (List<CityResponse>)responseCities.Result!;
+                                            if (cities.Count > 50)
+                                                cities = cities.Take(50).ToList();
+
                                             foreach (CityResponse cityResponse in cities)
                                             {
                                                 if (cityResponse.Name == "Mosfellsbær" || cityResponse.Name == "Șăulița")
