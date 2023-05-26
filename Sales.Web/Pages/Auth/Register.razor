@@ -1,0 +1,104 @@
+﻿@page "/Register"
+@inject IRepository repository
+@inject ILoginService loginServices
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+<h3>Registrar nuevo usuario</h3>
+
+<EditForm Model="userDto" OnValidSubmit="CreateUserAsync">
+    <DataAnnotationsValidator/>
+    <div class="row">
+        <div class="col-6">
+            <div class="mb-3">
+                <label>Nombre</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.FirstName"/>
+                    <ValidationMessage For="@(() => userDto.FirstName)"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.LastName" />
+                    <ValidationMessage For="@(() => userDto.LastName)" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Numero Documento</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.Document" />
+                    <ValidationMessage For="@(() => userDto.Document)" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Direccion</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.Address"/>
+                    <ValidationMessage For="@(() => userDto.Address)"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Correo</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.Email" />
+                    <ValidationMessage For="@(() => userDto.Email)" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Numero de Telefono</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.PhoneNumber"/>
+                    <ValidationMessage For="@(() => userDto.PhoneNumber)"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Ciudad</label>
+                <div>
+                    <InputNumber class="form-control" @bind-Value="@userDto.CityId" />
+                    <ValidationMessage For="@(() => userDto.CityId)" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Foto</label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@userDto.Photo"/>
+                    <ValidationMessage For="@(() => userDto.Photo)"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Contraseña</label>
+                <div>
+                    <InputText type="password" class="form-control" @bind-Value="@userDto.Password"/>
+                    <ValidationMessage For="@(() => userDto.Password)"/>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Confirmar Contraseña</label>
+                <div>
+                    <InputText type="password" class="form-control" @bind-Value="@userDto.PasswordConfirm" />
+                    <ValidationMessage For="@(() => userDto.PasswordConfirm)" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Registrarme</button>
+</EditForm>
+
+@code {
+    private CreateUserDto userDto = new();
+
+    private async Task CreateUserAsync()
+    {
+        userDto.UserType = UserType.User;
+        var httpResponse = await repository.Post<CreateUserDto, bool>("Accounts/CreateUser", userDto);
+        if(httpResponse.Error)
+        {
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        await sweetAlertService.FireAsync("Resgistrado", $"{userDto.Email} Se Registrado Correctamente", SweetAlertIcon.Success);
+        navigationManager.NavigateTo("/");
+    }
+}

@@ -2,10 +2,13 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class CountriesController : ControllerBase
@@ -40,9 +43,8 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<bool>> AddCountry(CountryDto countryDto)
+        public async Task<ActionResult<bool>> AddCountry(AddCountryUpdateDto countryDto)
         {
-            countryDto.Id = 0;
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
@@ -51,7 +53,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("id")]
-        public async Task<ActionResult<bool>> UpdateCountry(int id, CountryDto countryDto)
+        public async Task<ActionResult<bool>> UpdateCountry(int id, AddCountryUpdateDto countryDto)
         {
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");

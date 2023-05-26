@@ -14,16 +14,20 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/categories">
-                <span class="oi oi-plus" aria-hidden="true"></span> Categories
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/countries">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Countries
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Admin, User">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/categories">
+                        <span class="oi oi-plus" aria-hidden="true"></span> Categories
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/countries">
+                        <span class="oi oi-globe" aria-hidden="true"></span> Countries
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 

@@ -3,7 +3,6 @@ using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Repositories.Interfaces;
-using Sales.API.Infrastructure.Repositories;
 
 namespace Sales.API.Controllers
 {
@@ -21,7 +20,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllAsync([FromQuery]PaginationDto pagination)
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
             IEnumerable<Category> categories = await _categoryRepository.GetAllAsync(pagination);
             if (!categories.Any())
@@ -41,7 +40,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<bool>> AddCountry(CategoryDto categoryDto)
+        public async Task<ActionResult<bool>> AddCategorie(CategoryDto categoryDto)
         {
             categoryDto.Id = 0;
             if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
@@ -52,7 +51,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("id")]
-        public async Task<ActionResult<bool>> UpdateCountry(int id, CategoryDto categoryDto)
+        public async Task<ActionResult<bool>> UpdateCategorie(int id, CategoryDto categoryDto)
         {
             if (!ModelState.IsValid || categoryDto.Id != id)
                 return BadRequest("Datos invalidos");
@@ -64,11 +63,11 @@ namespace Sales.API.Controllers
         }
 
         [HttpDelete("id")]
-        public async Task<ActionResult<bool>> DeleteCountry(int id)
+        public async Task<ActionResult<bool>> DeleteCategorie(int id)
         {
             Category category = await _categoryRepository.GetByIdAsync(id);
             if (category is null)
-                return NotFound();
+                return NotFound("La categoria ya no existe");
 
             return Ok(await _categoryRepository.DeleteAsync(category));
         }

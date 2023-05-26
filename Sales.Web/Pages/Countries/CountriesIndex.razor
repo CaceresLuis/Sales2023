@@ -93,18 +93,26 @@
             url2 = $"countries/totalPages?filter={Filter}";
         }
 
-        var httpResponseCountry = await repository.Get<List<CountryDto>>(url1);
-        var httpResponsePages = await repository.Get<int>(url2);
-
-        if (httpResponseCountry.Error)
+        try
         {
-            var message = await httpResponseCountry.GetErrorMessageAsync();
-            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
-            return;
+            var httpResponseCountry = await repository.Get<List<CountryDto>>(url1);
+            var httpResponsePages = await repository.Get<int>(url2);
+            if (httpResponseCountry.Error)
+            {
+                var message = await httpResponseCountry.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            Countries = httpResponseCountry.Response!;
+            totalPages = httpResponsePages.Response!;    
+        }
+        catch(Exception e)
+        {
+            await sweetAlertService.FireAsync("Error", e.Message, SweetAlertIcon.Error);
         }
 
-        Countries = httpResponseCountry.Response!;
-        totalPages = httpResponsePages.Response!;
+
     }
 
     private async Task DeleteAsync(int id)

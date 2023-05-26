@@ -1,9 +1,10 @@
-﻿using Sales.Shared.Responses;
-using Sales.API.Data.Entities;
-using Sales.API.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using Sales.API.Helpers;
+﻿using Sales.API.Helpers;
 using Sales.Shared.Enums;
+using Sales.Shared.Responses;
+using Sales.API.Data.Entities;
+using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Sales.API.Services.Interfaces;
 
 namespace Sales.API.Data
 {
@@ -12,12 +13,14 @@ namespace Sales.API.Data
         private readonly IApiService _apiService;
         private readonly SalesDataContex _context;
         private readonly IUserHelper _userHelper;
+        private readonly SeedUserDefault _userDefault;
 
-        public SeedDb(SalesDataContex context, IApiService apiService, IUserHelper userHelper)
+        public SeedDb(SalesDataContex context, IApiService apiService, IUserHelper userHelper, IOptions<SeedUserDefault> userDefault)
         {
             _context = context;
             _apiService = apiService;
             _userHelper = userHelper;
+            _userDefault = userDefault.Value;
         }
 
         public async Task SeedAsync()
@@ -25,7 +28,7 @@ namespace Sales.API.Data
             await _context.Database.EnsureCreatedAsync();
             await CheckAsync();
             await CheckRolesAsync();
-            await CheckUserAsync("200", "Luis", "Caceres", "lccacers00@gmail.com", "76769136", "Jiqui", UserType.Admin);
+            await CheckUserAsync("200", "Luis", "Caceres", _userDefault.Email, _userDefault.PhoneNumber, "Jiqui", UserType.Admin);
         }
 
         private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
@@ -46,7 +49,7 @@ namespace Sales.API.Data
                     UserType = userType
                 };
 
-                await _userHelper.AddUserAsync(user, "123456");
+                await _userHelper.AddUserAsync(user, _userDefault.Password);
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());
             }
             return user;
