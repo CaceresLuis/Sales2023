@@ -4,6 +4,8 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Exceptions;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Sales.API.Infrastructure.Repositories;
 
 namespace Sales.API.Controllers
 {
@@ -38,6 +40,14 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(_mapper.Map<CityDto>(city));
+        }
+
+        [AllowAnonymous]
+        [HttpGet("combo/{stateId:int}")]
+        public async Task<ActionResult> GetCombo(int stateId)
+        {
+            IEnumerable<City> getStates = await _cityRepository.GetAllAsync(stateId);
+            return Ok(_mapper.Map<IEnumerable<CityDto>>(getStates));
         }
 
         [HttpPost]

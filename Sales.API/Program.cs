@@ -20,6 +20,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=ConnectionStrings:LocalConnection"));
 
+//Posgres
+
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddTransient<SeedDb>();

@@ -25,7 +25,7 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CountryDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
-             IEnumerable<Country> countries = await _countryRepository.GetAllAsync(pagination);
+            IEnumerable<Country> countries = await _countryRepository.GetAllAsync(pagination);
             if (!countries.Any())
                 return NotFound("Aun no hay registro de paises");
 
@@ -42,8 +42,16 @@ namespace Sales.API.Controllers
             return Ok(_mapper.Map<CountryDto>(country));
         }
 
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        public async Task<ActionResult> GetCombo()
+        {
+            IEnumerable<Country> getCountries = await _countryRepository.GetAllAsync();
+            return Ok(_mapper.Map<IEnumerable<SimpleCountryDto>>(getCountries));
+        }
+
         [HttpPost]
-        public async Task<ActionResult<bool>> AddCountry(AddCountryUpdateDto countryDto)
+        public async Task<ActionResult<bool>> AddCountry(SimpleCountryDto countryDto)
         {
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
@@ -53,7 +61,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut("id")]
-        public async Task<ActionResult<bool>> UpdateCountry(int id, AddCountryUpdateDto countryDto)
+        public async Task<ActionResult<bool>> UpdateCountry(int id, SimpleCountryDto countryDto)
         {
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");

@@ -4,6 +4,7 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Exceptions;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sales.API.Controllers
 {
@@ -38,6 +39,14 @@ namespace Sales.API.Controllers
                 return NotFound();
 
             return Ok(_mapper.Map<StateDto>(state));
+        }
+
+        [AllowAnonymous]
+        [HttpGet("combo/{countryId:int}")]
+        public async Task<ActionResult> GetCombo(int countryId)
+        {
+            IEnumerable<State> getStates = await _stateRepository.GetAllAsync(countryId);
+            return Ok(_mapper.Map<IEnumerable<SimpleStateDto>>(getStates));
         }
 
         [HttpPost]

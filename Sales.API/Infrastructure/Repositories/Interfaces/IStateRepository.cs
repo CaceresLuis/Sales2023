@@ -10,5 +10,6 @@ namespace Sales.API.Infrastructure.Repositories.Interfaces
         Task<ErrorClass> ExistStateInCountry(int countryId, string nameState);
         Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination);
         Task<double> GetPages(PaginationDto pagination);
+        Task<IEnumerable<State>> GetAllAsync(int countryId);
     }
 }

@@ -16,6 +16,10 @@ namespace Sales.API.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<State>> GetAllAsync(int countryId) => await _context.States.Where(s => s.CountryId == countryId).ToListAsync();
+
+        public async Task<State> GetByIdWhitEstatesAsync(int id) => await _context.States.Include(s => s.Cities).FirstOrDefaultAsync(s => s.Id == id);
+
         public async Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination)
         {
             IQueryable<State> queriable = _context.States.Include(s => s.Cities)
@@ -25,13 +29,6 @@ namespace Sales.API.Infrastructure.Repositories
                 queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
 
             return await queriable.OrderBy(s => s.Name).Paginate(pagination).ToListAsync();
-        }
-
-        public async Task<State> GetByIdWhitEstatesAsync(int id)
-        {
-            return await _context.States
-                .Include(s => s.Cities)
-                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<ErrorClass> ExistStateInCountry(int countryId, string nameState)

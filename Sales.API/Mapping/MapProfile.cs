@@ -11,9 +11,10 @@ namespace Sales.API.Mapping
             CreateMap<City,  CityDto>().ReverseMap();
             CreateMap<State,  StateDto>().ReverseMap();
             CreateMap<Country,  CountryDto>().ReverseMap();
-            CreateMap<Country,  AddCountryUpdateDto>().ReverseMap();
             CreateMap<User,  CreateUserDto>().ReverseMap();
+            CreateMap<State,  SimpleStateDto>().ReverseMap();
             CreateMap<Category,  CategoryDto>().ReverseMap();
+            CreateMap<Country,  SimpleCountryDto>().ReverseMap();
         }
     }
 }

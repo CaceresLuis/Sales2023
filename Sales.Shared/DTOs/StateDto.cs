@@ -12,8 +12,9 @@ namespace Sales.Shared.DTOs
         public string? Name { get; set; }
 
         public int CountryId { get; set; }
-        //public CountryDto? Country { get; set; }
+
         public ICollection<CityDto>? Cities { get; set; }
+
         public int CitiesNumber => Cities == null ? 0 : Cities.Count;
 
         public override string ToString()

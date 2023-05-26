@@ -8,6 +8,7 @@ namespace Sales.API.Infrastructure.Repositories.Interfaces
     {
         Task<ErrorClass> ExistCityInStateAsync(int stateId, string cityName);
         Task<IEnumerable<City>> GetAllAsync(PaginationDto pagination);
+        Task<IEnumerable<City>> GetAllAsync(int stateId);
         Task<double> GetPages(PaginationDto pagination);
     }
 }

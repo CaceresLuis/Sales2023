@@ -13,6 +13,9 @@ namespace Sales.API.Infrastructure.Repositories
         private readonly SalesDataContex _context;
         public CityRepository(SalesDataContex context) : base(context) => _context = context;
 
+
+        public async Task<IEnumerable<City>> GetAllAsync(int stateId) => await _context.Cities.Where(c => c.StateId == stateId).ToListAsync();
+
         public async Task<IEnumerable<City>> GetAllAsync(PaginationDto pagination)
         {
             IQueryable<City> queriable = _context.Cities.Where(c => c.StateId == pagination.Id).AsQueryable();
