@@ -5,6 +5,9 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Sales.API.Infrastructure.Exceptions;
 
 namespace Sales.API.Controllers
 {
@@ -19,6 +22,13 @@ namespace Sales.API.Controllers
         {
             _mapper = mapper;
             _userHelper = userHelper;
+        }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Get()
+        {
+            return Ok(await _userHelper.GetUserAsync(User.Identity.Name!));
         }
 
         [HttpPost("CreateUser")]
@@ -61,6 +71,18 @@ namespace Sales.API.Controllers
                 return BadRequest("Contraseña o correo erroneos");
 
             return Ok(_userHelper.GetToken(user));
+        }
+
+        [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Update(UpdateUserDto userDto)
+        {
+            User user = _mapper.Map<User>(userDto);
+            CustomResponse update = await _userHelper.UpdateUserAsync(user);
+            if (!update.Succeeded)
+                return BadRequest(update.Error);
+
+            return NoContent();
         }
     }
 }

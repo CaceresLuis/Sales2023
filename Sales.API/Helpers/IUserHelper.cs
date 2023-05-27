@@ -1,6 +1,7 @@
 ﻿using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using Sales.API.Infrastructure.Exceptions;
 
 namespace Sales.API.Helpers
 {
@@ -17,5 +18,8 @@ namespace Sales.API.Helpers
         Task RemoveUserAsyn(User user);
 
         TokenDto GetToken(User user);
+        Task<User> GetUserAsync(Guid id);
+        Task<IdentityResult> ChangePasswordAsync(User user, string currentPasswort, string newPasswort);
+        Task<CustomResponse> UpdateUserAsync(User user);
     }
 }

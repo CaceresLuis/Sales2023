@@ -8,7 +8,6 @@ namespace Sales.API.Data
     {
         public SalesDataContex(DbContextOptions<SalesDataContex> options) : base(options) { }
 
-        public DbSet<City> User { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<Country> Countries { get; set; }

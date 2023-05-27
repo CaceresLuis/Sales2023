@@ -18,16 +18,17 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=ConnectionStrings:LocalConnection"));
+//builder.Services.AddDbContext<SalesDataContex>(x => x.UseSqlServer("name=ConnectionStrings:LocalConnection"));
 
-//Posgres
-
+//PosgresConnection
+builder.Services.AddDbContext<SalesDataContex>(options => options.UseNpgsql("name=ConnectionStrings:PostgresConnection"));
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddTransient<SeedDb>();
 builder.Services.AddScoped<IApiService, Apiservice>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
+builder.Services.AddScoped<IFileStorage, FileStorage>();
 
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IStateRepository, StateRepository>();
@@ -35,7 +36,7 @@ builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 //Get user data from secrets
-builder.Services.Configure<JwtKey>(builder.Configuration.GetSection("JwtConfig"));
+builder.Services.Configure<AzureBlobKey>(builder.Configuration.GetSection("AzureBlobKey"));
 builder.Services.Configure<SeedUserDefault>(builder.Configuration.GetSection("DefaultUser"));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -69,15 +70,15 @@ builder.Services.AddCors(options =>
 WebApplication app = builder.Build();
 
 //inyeccion de datos harcode
-//SeedData(app);
-//static void SeedData(WebApplication app)
-//{
-//    IServiceScopeFactory scopeFactory = app.Services.GetService<IServiceScopeFactory>();
+SeedData(app);
+static void SeedData(WebApplication app)
+{
+    IServiceScopeFactory scopeFactory = app.Services.GetService<IServiceScopeFactory>();
 
-//    using IServiceScope scope = scopeFactory.CreateScope();
-//    SeedDb service = scope.ServiceProvider.GetService<SeedDb>();
-//    service.SeedAsync().Wait();
-//}
+    using IServiceScope scope = scopeFactory.CreateScope();
+    SeedDb service = scope.ServiceProvider.GetService<SeedDb>();
+    service.SeedAsync().Wait();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

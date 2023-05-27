@@ -53,18 +53,52 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label>Ciudad</label>
+                <label>Pais</label>
                 <div>
-                    <InputNumber class="form-control" @bind-Value="@userDto.CityId" />
-                    <ValidationMessage For="@(() => userDto.CityId)" />
+                    <select class="form-select" @onchange="CountryChangedAsync">
+                        <option value="0" >-- Selecciona tu pais --</option>
+                        @if(countries is not null)
+                        {
+                            @foreach (var country in countries)
+                            {
+                                <option value="@country.Id">@country.Name</option>
+                            }
+                        }
+                    </select>
                 </div>
             </div>
             <div class="mb-3">
-                <label>Foto</label>
+                <label>Estado/Departamento</label>
                 <div>
-                    <InputText class="form-control" @bind-Value="@userDto.Photo"/>
-                    <ValidationMessage For="@(() => userDto.Photo)"/>
+                    <select class="form-select" @onchange="StateChangedAsync">
+                        <option value="0">-- Selecciona tu Estado --</option>
+                        @if (states is not null)
+                        {
+                            @foreach (var stado in states)
+                            {
+                                <option value="@stado.Id">@stado.Name</option>
+                            }
+                        }
+                    </select>
                 </div>
+            </div>
+            <div class="mb-3">
+                <label>ciudad</label>
+                <div>
+                    <select class="form-select" @bind="userDto.CityId">
+                        <option value="0">-- Selecciona tu ciudad --</option>
+                        @if (cities is not null)
+                        {
+                            @foreach (var city in cities)
+                            {
+                                <option value="@city.Id">@city.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <InputImg Label="Foto" ImageSelected="ImageSelected" ImageUrl="@imageUrl"/>
             </div>
             <div class="mb-3">
                 <label>Contraseña</label>
@@ -86,7 +120,27 @@
 </EditForm>
 
 @code {
+    private string? imageUrl;
+    private List<CityDto>? cities;
+    private List<SimpleStateDto>? states;
     private CreateUserDto userDto = new();
+    private List<SimpleCountryDto>? countries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCountriesAsync();
+        if (!string.IsNullOrEmpty(userDto.Photo))
+        {
+            imageUrl = userDto.Photo;
+            userDto.Photo = null;
+        }
+    }
+
+    private void ImageSelected(string imageBase64)
+    {
+        userDto.Photo = imageBase64;
+        imageUrl = null;
+    }
 
     private async Task CreateUserAsync()
     {
@@ -100,5 +154,56 @@
         }
         await sweetAlertService.FireAsync("Resgistrado", $"{userDto.Email} Se Registrado Correctamente", SweetAlertIcon.Success);
         navigationManager.NavigateTo("/");
+    }
+
+    private async Task CountryChangedAsync(ChangeEventArgs args)
+    {
+        var selectedCountry = Convert.ToInt32(args.Value);
+        await LoadStatesAsync(selectedCountry);
+    }
+
+    private async Task StateChangedAsync(ChangeEventArgs args)
+    {
+        var selectedState = Convert.ToInt32(args.Value);
+        await LoadCitiesAsync(selectedState);
+    }
+
+    private async Task LoadCountriesAsync()
+    {
+        var httpResponse = await repository.Get<List<SimpleCountryDto>>("countries/Combo");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        countries = httpResponse.Response;
+    }
+
+    private async Task LoadStatesAsync(int countryId)
+    {
+        var httpResponse = await repository.Get<List<SimpleStateDto>>($"States/Combo/{countryId}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        states = httpResponse.Response;
+    }
+
+    private async Task LoadCitiesAsync(int stateId)
+    {
+        var httpResponse = await repository.Get<List<CityDto>>($"Cities/Combo/{stateId}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        cities = httpResponse.Response;
     }
 }

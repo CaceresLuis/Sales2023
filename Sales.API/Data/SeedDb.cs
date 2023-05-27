@@ -70,7 +70,7 @@ namespace Sales.API.Data
                 {
                     List<CountryResponse> countries = (List<CountryResponse>)responseCountries.Result!;
                     if(countries.Count > 50) 
-                        countries = countries.Skip(50).Take(100).ToList();
+                        countries = countries.Skip(25).Take(120).ToList();
 
                     foreach (CountryResponse countryResponse in countries)
                     {

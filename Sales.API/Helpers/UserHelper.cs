@@ -3,36 +3,61 @@ using Sales.API.Data;
 using Sales.Shared.DTOs;
 using System.Security.Claims;
 using Sales.API.Data.Entities;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Sales.API.Infrastructure.Exceptions;
 
 namespace Sales.API.Helpers
 {
     public class UserHelper : IUserHelper
     {
-        private readonly JwtKey _options;
+        private readonly string _container;
         private readonly SalesDataContex _context;
+        private readonly IFileStorage _fileStorage;
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserHelper(SalesDataContex context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, SignInManager<User> signInManager, IOptions<JwtKey> options, IConfiguration configuration)
+        public UserHelper(SalesDataContex context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, SignInManager<User> signInManager, IConfiguration configuration, IFileStorage fileStorage)
         {
             _context = context;
+            _container = "users";
+            _fileStorage = fileStorage;
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
-            _options = options.Value;
             _configuration = configuration;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPasswort, string newPasswort) => await _userManager.ChangePasswordAsync(user, currentPasswort, newPasswort);
+
+        public async Task<User> GetUserAsync(string email)
+        {
+            return await _context.Users.Include(u => u.City)
+                .ThenInclude(c => c.State).ThenInclude(s => s.Country)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User> GetUserAsync(Guid id)
+        {
+            return await _context.Users.Include(u => u.City)
+                .ThenInclude(c => c.State).ThenInclude(s => s.Country)
+                .FirstOrDefaultAsync(u => u.Id == id.ToString());
         }
 
         public async Task<IdentityResult> AddUserAsync(User user, string password)
         {
-            return await _userManager.CreateAsync(user, password);
+            Task<IdentityResult> addUser = _userManager.CreateAsync(user, password);
+
+            if (!string.IsNullOrEmpty(user.Photo))
+            {
+                byte[] photoUser = Convert.FromBase64String(user.Photo);
+                user.Photo = await _fileStorage.SaveFileAsync(photoUser, ".jpg", _container);
+            }
+            return await addUser;
         }
 
         public async Task<IdentityResult> AddUserToRoleAsync(User user, string roleName)
@@ -50,11 +75,38 @@ namespace Sales.API.Helpers
             }
         }
 
-        public async Task<User> GetUserAsync(string email)
+        public async Task<CustomResponse> UpdateUserAsync(User user)
         {
-            return await _context.Users.Include(u => u.City)
-                .ThenInclude(c => c.State).ThenInclude(s => s.Country)
-                .FirstOrDefaultAsync(u => u.Email == email);
+            User currentUser = await GetUserAsync(user.Email);
+            if (currentUser == null)
+            {
+                CustomResponse result = new()
+                {
+                    Succeeded = false,
+                    Error = "User no existe"
+                };
+                return result;
+            }
+
+            currentUser.CityId = user.CityId;
+            currentUser.Address = user.Address ?? currentUser.Address;
+            currentUser.LastName = user.LastName ?? currentUser.LastName;
+            currentUser.Document = user.Document ?? currentUser.Document;
+            currentUser.FirstName = user.FirstName ?? currentUser.FirstName;
+            currentUser.PhoneNumber = user.PhoneNumber ?? currentUser.PhoneNumber;
+
+            if (!string.IsNullOrEmpty(user.Photo) && user.Photo != currentUser.Photo)
+            {
+                currentUser.Photo = user.Photo;
+                byte[] photoUser = Convert.FromBase64String(user.Photo);
+                user.Photo = await _fileStorage.SaveFileAsync(photoUser, "jpg", _container);
+            }
+
+            IdentityResult update = await _userManager.UpdateAsync(currentUser);
+            if (update.Succeeded)
+                return new CustomResponse() { Succeeded = true };
+
+            return new CustomResponse() { Succeeded = false, Error = update.Errors.FirstOrDefault().ToString() };
         }
 
         public async Task<bool> UserExistAsync(string email)
@@ -86,14 +138,14 @@ namespace Sales.API.Helpers
         {
             List<Claim> claims = new()
             {
-                new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.Role, user.UserType.ToString()),
-                new Claim("Document", user.Document),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName),
+                new Claim("Photo", user.Photo),
                 new Claim("Address", user.Address),
-                new Claim("Photo", user.Photo?? string.Empty),
+                new Claim("LastName", user.LastName),
+                new Claim("Document", user.Document),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim("FirstName", user.FirstName),
                 new Claim("CityId", user.CityId.ToString()),
+                new Claim(ClaimTypes.Role, user.UserType.ToString())
             };
 
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(_configuration["JwtConfig:jwtKey"]));
