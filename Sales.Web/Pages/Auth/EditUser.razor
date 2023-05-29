@@ -1,0 +1,211 @@
+﻿@page "/EditUser"
+@inject IRepository repository
+@inject ILoginService loginService
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+@if(user is null)
+{
+    <div class="spinner-border"></div>
+}
+else
+{
+    <EditForm Model="user" OnValidSubmit="SaveUserAsync">
+        <DataAnnotationsValidator/>
+        <div class="card">
+            <div class="card-header">
+                <span>
+                    <i class="oi oi-person" /> Editar usuario
+                    <a class="btn btn-sm btn-secondary float-end" href="/ChangePassword"><i class="oi oi-key" />Cambiar Contraseña</a>
+                    <button class="btn btn-sm btn-primary float-end mx-2" type="submit"><i class="oi oi-check" /> Guardar Cambios</button>
+
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@user.FirstName" />
+                                <ValidationMessage For="@(() => user.FirstName)"/>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Apellido</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@user.LastName" />
+                                <ValidationMessage For="@(() => user.LastName)"/>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Documento</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@user.Document" />
+                                <ValidationMessage For="@(() => user.Document)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Telefono</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@user.PhoneNumber" />
+                                <ValidationMessage For="@(() => user.PhoneNumber)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Direccion</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@user.Address" />
+                                <ValidationMessage For="@(() => user.Address)" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Pais</label>
+                            <div>
+                                <select class="form-control" @onchange="CountryChangedAsync">
+                                    @if(countries is not null)
+                                    {
+                                        @foreach (var country in countries)
+                                        {
+                                            <option value="@country.Id" selected="@(country.Id == user.CountryId)">@country.Name</option>    
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Estado</label>
+                            <select class="form-control" @onchange="StateChangedAsync">
+                                @if (states is not null)
+                                {
+                                    @foreach (var state in states)
+                                    {
+                                        <option value="@state.Id" selected="@(state.Id == user.StateId)">@state.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Ciudad</label>
+                            <select class="form-control" @bind="user.CityId">
+                                @if (cities is not null)
+                                {
+                                    @foreach (var city in cities)
+                                    {
+                                        <option value="@city.Id" selected="@(city.Id == user.CityId)">@city.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <InputImg Label="Foto" ImageSelected="ImageSelected" ImageURL="@imageUrl" />
+                            <div class="mb-2">
+                                <img src="@user.Photo" width="50" height="50" style="border-radius:50%">
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private string? imageUrl;
+    private UpdateUserDto? user;
+    private List<CityDto>? cities;
+    private List<SimpleStateDto>? states;
+    private List<SimpleCountryDto>? countries;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserAsync();
+        await LoadCountriesAsync();
+        await LoadCitiesAsync(user!.StateId);
+        await LoadStatesAsync(user!.CountryId);
+    }
+
+    private async Task LoadUserAsync()
+    {
+        var httpResponse = await repository.Get<UpdateUserDto>("Accounts");
+        if (httpResponse.Error)
+        {
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            navigationManager.NavigateTo("/");
+            return;
+        }
+        user = httpResponse.Response;
+    }
+
+    private void ImageSelected(string imageBase64)
+    {
+        user!.Photo = imageBase64;
+        imageUrl = null;
+    }
+
+    private async Task SaveUserAsync()
+    {
+        var httpResponse = await repository.Put<UpdateUserDto, TokenDto>("Accounts", user!);
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        await loginService.LoginAsync(httpResponse.Response!.Token);
+        navigationManager.NavigateTo("/");
+    }
+
+    private async Task CountryChangedAsync(ChangeEventArgs args)
+    {
+        var selectedCountry = Convert.ToInt32(args.Value);
+        await LoadStatesAsync(selectedCountry);
+    }
+
+    private async Task StateChangedAsync(ChangeEventArgs args)
+    {
+        var selectedState = Convert.ToInt32(args.Value);
+        await LoadCitiesAsync(selectedState);
+    }
+
+    private async Task LoadCountriesAsync()
+    {
+        var httpResponse = await repository.Get<List<SimpleCountryDto>>("countries/Combo");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        countries = httpResponse.Response;
+    }
+
+    private async Task LoadStatesAsync(int countryId)
+    {
+        var httpResponse = await repository.Get<List<SimpleStateDto>>($"States/Combo/{countryId}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        states = httpResponse.Response;
+    }
+
+    private async Task LoadCitiesAsync(int stateId)
+    {
+        var httpResponse = await repository.Get<List<CityDto>>($"Cities/Combo/{stateId}");
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        cities = httpResponse.Response;
+    }
+}

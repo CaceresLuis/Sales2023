@@ -77,6 +77,11 @@ namespace Sales.Web.Repositories
             HttpResponseMessage response = await _httpClient.DeleteAsync(url);
             return new HttpResponseWrapper<object>(null, !response.IsSuccessStatusCode, response);
         }
-    }
 
+        public async Task<HttpResponseWrapper<object>> Get(string url) 
+        {
+            var httpResponse = await _httpClient.GetAsync(url);
+            return new HttpResponseWrapper<object>(null, !httpResponse.IsSuccessStatusCode, httpResponse);
+        }
+    }
 }

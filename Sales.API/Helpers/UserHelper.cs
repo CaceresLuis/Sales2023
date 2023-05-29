@@ -32,6 +32,10 @@ namespace Sales.API.Helpers
             _configuration = configuration;
         }
 
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token) => await _userManager.ConfirmEmailAsync(user, token);
+        
+        public async Task<string> GenerateEmailTokenConfirmAsync(User user) => await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPasswort, string newPasswort) => await _userManager.ChangePasswordAsync(user, currentPasswort, newPasswort);
 
         public async Task<User> GetUserAsync(string email)
@@ -95,12 +99,15 @@ namespace Sales.API.Helpers
             currentUser.FirstName = user.FirstName ?? currentUser.FirstName;
             currentUser.PhoneNumber = user.PhoneNumber ?? currentUser.PhoneNumber;
 
-            if (!string.IsNullOrEmpty(user.Photo) && user.Photo != currentUser.Photo)
+            if (!string.IsNullOrEmpty(user.Photo))
             {
-                currentUser.Photo = user.Photo;
                 byte[] photoUser = Convert.FromBase64String(user.Photo);
-                user.Photo = await _fileStorage.SaveFileAsync(photoUser, "jpg", _container);
-            }
+                if (!string.IsNullOrEmpty(currentUser.Photo))
+                {
+                    currentUser.Photo = await _fileStorage.EditFileAsync(photoUser, "jpg", _container, currentUser.Photo);
+                }
+                currentUser.Photo = await _fileStorage.SaveFileAsync(photoUser, ".jpg", _container);
+            }            
 
             IdentityResult update = await _userManager.UpdateAsync(currentUser);
             if (update.Succeeded)
@@ -138,7 +145,6 @@ namespace Sales.API.Helpers
         {
             List<Claim> claims = new()
             {
-                new Claim("Photo", user.Photo),
                 new Claim("Address", user.Address),
                 new Claim("LastName", user.LastName),
                 new Claim("Document", user.Document),
@@ -147,6 +153,8 @@ namespace Sales.API.Helpers
                 new Claim("CityId", user.CityId.ToString()),
                 new Claim(ClaimTypes.Role, user.UserType.ToString())
             };
+
+            if(user.Photo != null) claims.Add(new Claim("Photo", user.Photo));
 
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(_configuration["JwtConfig:jwtKey"]));
             SigningCredentials credential = new(key, SecurityAlgorithms.HmacSha256);

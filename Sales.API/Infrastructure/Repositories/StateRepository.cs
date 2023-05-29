@@ -19,7 +19,7 @@ namespace Sales.API.Infrastructure.Repositories
         public async Task<IEnumerable<State>> GetAllAsync(int countryId) => await _context.States.Where(s => s.CountryId == countryId).ToListAsync();
 
         public async Task<State> GetByIdWhitEstatesAsync(int id) => await _context.States.Include(s => s.Cities).FirstOrDefaultAsync(s => s.Id == id);
-
+        
         public async Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination)
         {
             IQueryable<State> queriable = _context.States.Include(s => s.Cities)

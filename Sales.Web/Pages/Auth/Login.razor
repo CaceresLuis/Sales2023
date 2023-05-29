@@ -20,7 +20,7 @@
             <div class="mb-3">
                 <label>Contraseña</label>
                 <div>
-                    <InputText class="form-control" @bind-Value="@login.Password" />
+                    <InputText type="password" class="form-control" @bind-Value="@login.Password" />
                     <ValidationMessage For="@(() => login.Password)" />
                 </div>
             </div>

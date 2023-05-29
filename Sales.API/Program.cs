@@ -27,6 +27,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddTransient<SeedDb>();
 builder.Services.AddScoped<IApiService, Apiservice>();
+builder.Services.AddScoped<IMailHelper, MailHelper>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IFileStorage, FileStorage>();
 
@@ -35,8 +36,9 @@ builder.Services.AddScoped<IStateRepository, StateRepository>();
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-//Get user data from secrets
+//Get data from secrets
 builder.Services.Configure<AzureBlobKey>(builder.Configuration.GetSection("AzureBlobKey"));
+builder.Services.Configure<SendMailConfiguration>(builder.Configuration.GetSection("Mail"));
 builder.Services.Configure<SeedUserDefault>(builder.Configuration.GetSection("DefaultUser"));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -50,14 +52,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ClockSkew = TimeSpan.Zero
     });
 
-builder.Services.AddIdentity<User, IdentityRole>(x =>
+builder.Services.AddIdentity<User, IdentityRole>(config =>
 {
-    x.User.RequireUniqueEmail = true;
-    x.Password.RequireDigit = false;
-    x.Password.RequiredUniqueChars = 0;
-    x.Password.RequireLowercase = false;
-    x.Password.RequireNonAlphanumeric = false;
-    x.Password.RequireUppercase = false;
+    config.Password.RequireDigit = false;
+    config.User.RequireUniqueEmail = true;
+    config.Password.RequiredUniqueChars = 0;
+    config.Password.RequireLowercase = false;
+    config.Password.RequireUppercase = false;
+    config.Lockout.AllowedForNewUsers = true;
+    config.Lockout.MaxFailedAccessAttempts = 5;
+    config.SignIn.RequireConfirmedEmail = true;
+    config.Password.RequireNonAlphanumeric = false;
+    config.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    config.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultProvider;
 })
     .AddEntityFrameworkStores<SalesDataContex>()
     .AddDefaultTokenProviders();

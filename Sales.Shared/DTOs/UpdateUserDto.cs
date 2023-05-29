@@ -5,6 +5,8 @@ namespace Sales.Shared.DTOs
 {
     public class UpdateUserDto
     {
+        public Guid Id { get; set; }
+
         [Display(Name = "Documento")]
         [MaxLength(20, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]
         public string Document { get; set; } = null!;
@@ -30,6 +32,10 @@ namespace Sales.Shared.DTOs
         [Display(Name = "Ciudad")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes seleccionar una {0}.")]
         public int CityId { get; set; }
+
+        public string? Email { get; set; }
+        public int StateId { get; set; }
+        public int CountryId { get; set; }
 
         [Display(Name = "Telefono")]
         [MaxLength(200, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]

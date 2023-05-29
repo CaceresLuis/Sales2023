@@ -21,5 +21,7 @@ namespace Sales.API.Helpers
         Task<User> GetUserAsync(Guid id);
         Task<IdentityResult> ChangePasswordAsync(User user, string currentPasswort, string newPasswort);
         Task<CustomResponse> UpdateUserAsync(User user);
+        Task<IdentityResult> ConfirmEmailAsync(User user, string token);
+        Task<string> GenerateEmailTokenConfirmAsync(User user);
     }
 }

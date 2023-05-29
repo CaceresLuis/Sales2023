@@ -51,6 +51,8 @@ namespace Sales.API.Data
 
                 await _userHelper.AddUserAsync(user, _userDefault.Password);
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());
+                var tokenEmail = await _userHelper.GenerateEmailTokenConfirmAsync(user);
+                await _userHelper.ConfirmEmailAsync(user, tokenEmail);
             }
             return user;
         }
