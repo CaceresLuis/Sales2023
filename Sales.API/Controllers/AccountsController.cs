@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
 using Sales.API.Helpers;
 using Sales.Shared.DTOs;
+using Sales.Shared.Responses;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using Microsoft.Extensions.Options;
-using Sales.Shared.Responses;
 
 namespace Sales.API.Controllers
 {
@@ -65,17 +65,17 @@ namespace Sales.API.Controllers
             }
 
             string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
-            string tokenLink = Url.Action("ComfirmEmail", "accounts", new
+            string tokenLink = Url.Action("ConfirmEmail", "accounts", new
             {
-                userId = user.Id,
+                userid = user.Id,
                 token = myToken
             }, HttpContext.Request.Scheme, _sendMail.UrlWEB);
 
-            Response response = _mailHelper.SendMail(user.FullName, user.Email,
+            Response response = await _mailHelper.SendMail(user.FullName, user.Email,
                 "Sales - Confirmacion de cuenta",
                 $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={tokenLink}> click aqui</a></b></p>");
             if (response.IsSuccess)
-                return NoContent();
+                return Ok(true);
 
             return BadRequest(response.Message);
         }
@@ -109,7 +109,9 @@ namespace Sales.API.Controllers
             if (!update.Succeeded)
                 return BadRequest(update.Error);
 
-            return Ok(_userHelper.GetToken(user));
+            var userUpdated = await _userHelper.GetUserAsync(user.Email);
+
+            return Ok(_userHelper.GetToken(userUpdated));
         }
 
         [HttpPost("changePassword")]
@@ -139,6 +141,28 @@ namespace Sales.API.Controllers
             if (!emailConfirm.Succeeded) return BadRequest(emailConfirm.Errors.FirstOrDefault());
 
             return NoContent();
+        }
+
+        [HttpPost("ResendToken")]
+        public async Task<ActionResult> ResendToken([FromBody] EmailDto email)
+        {
+            User user = await _userHelper.GetUserAsync(email.Email);
+            if (user is null) return NotFound("Usuario no encontrado");
+
+            string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
+            string tokenLink = Url.Action("ConfirmEmail", "accounts", new
+            {
+                userId = user.Id,
+                token = myToken
+            }, HttpContext.Request.Scheme, _sendMail.UrlWEB);
+
+            Response response = await _mailHelper.SendMail(user.FullName, user.Email!,
+            "Saless- Confirmación de cuenta",
+            $"<h1>Sales - Confirmación de cuenta</h1><p>Para habilitar el usuario, por favor hacer clic 'Confirmar Email':</p> <b><a href ={tokenLink}>Confirmar Email</a></b>");
+
+            if (!response.IsSuccess) return BadRequest(response.Message);
+
+            return NoContent();     
         }
     }
 }

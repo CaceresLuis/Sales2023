@@ -6,6 +6,10 @@
 
 <h3>Registrar nuevo usuario</h3>
 
+@if (loading)
+{
+    <div class="spinner-grow"></div>
+}
 <EditForm Model="userDto" OnValidSubmit="CreateUserAsync">
     <DataAnnotationsValidator/>
     <div class="row">
@@ -120,6 +124,7 @@
 </EditForm>
 
 @code {
+    private bool loading;
     private string? imageUrl;
     private List<CityDto>? cities;
     private List<SimpleStateDto>? states;
@@ -144,6 +149,7 @@
 
     private async Task CreateUserAsync()
     {
+        loading = true;
         userDto.UserType = UserType.User;
         var httpResponse = await repository.Post<CreateUserDto, bool>("Accounts/CreateUser", userDto);
         if(httpResponse.Error)
@@ -152,7 +158,9 @@
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        await sweetAlertService.FireAsync("Resgistrado", $"{userDto.Email} Se Registrado Correctamente", SweetAlertIcon.Success);
+
+        loading = false;
+        await sweetAlertService.FireAsync("Confirmacion", "Su cuenta ha sido creada, se ha enviado un correo para finalizar", SweetAlertIcon.Info);
         navigationManager.NavigateTo("/");
     }
 

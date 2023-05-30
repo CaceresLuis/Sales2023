@@ -14,22 +14,23 @@ namespace Sales.API.Helpers
             _sendMail = sendMail.Value;
         }
 
-        public Response SendMail(string toName, string toEmail, string subject, string body)
+        public async Task<Response> SendMail(string toName, string toEmail, string subject, string body)
         {
             try
             {
                 MimeMessage message = new();
-                message.From.Add(new MailboxAddress(_sendMail.Name, _sendMail.From));
+                message.From.Add(new MailboxAddress(_sendMail.Name, _sendMail.UserName));
                 message.To.Add(new MailboxAddress(toName, toEmail));
                 message.Subject = subject;
                 BodyBuilder bodyBuilder = new() { HtmlBody = body };
                 message.Body = bodyBuilder.ToMessageBody();
 
                 using var client = new SmtpClient();
-                client.Connect(_sendMail.Smtp, int.Parse(_sendMail.Port), false);
-                client.Authenticate(_sendMail.From, _sendMail.Password);
-                client.Send(message);
-                client.Disconnect(true);
+                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                await client.ConnectAsync(_sendMail.Smtp, _sendMail.Port);
+                await client.AuthenticateAsync(_sendMail.UserName, _sendMail.Password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
 
                 return new Response { IsSuccess = true };
             }

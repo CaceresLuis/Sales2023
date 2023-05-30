@@ -6,28 +6,40 @@
 
 <h3>Inicio de sesion</h3>
 
-<EditForm Model="login" OnValidSubmit="LoginAsync">
-    <DataAnnotationsValidator/>
-    <div class="row">
-        <div class="col-4">
-            <div class="mb-3">
-                <label>Correo</label>
-                <div>
-                    <InputText class="form-control" @bind-Value="@login.Email"/>
-                    <ValidationMessage For="@(() => login.Email)"/>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="login" OnValidSubmit="LoginAsync">
+            <DataAnnotationsValidator/>
+            <div class="card bg-light">
+                <div class="card-header justify-content-center">
+                    <span>
+                        <i class="oi oi-account-login"/> Iniciar Sesion
+                        <button class="btn btn-primary float-end" type="submit"><i class="oi oi-check"/>Iniciar Sesion</button>
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label>Correo</label>
+                        <div>
+                            <InputText class="form-control" @bind-Value="@login.Email" />
+                            <ValidationMessage For="@(() => login.Email)" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Contraseña</label>
+                        <div>
+                            <InputText type="password" class="form-control" @bind-Value="@login.Password" />
+                            <ValidationMessage For="@(() => login.Password)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-link" href="/ResendToken">Reenviar Correo</a>
                 </div>
             </div>
-            <div class="mb-3">
-                <label>Contraseña</label>
-                <div>
-                    <InputText type="password" class="form-control" @bind-Value="@login.Password" />
-                    <ValidationMessage For="@(() => login.Password)" />
-                </div>
-            </div>
-            <button class="btn btn-primary" type="submit">Iniciar Secion</button>
-        </div>
+        </EditForm>
     </div>
-</EditForm>
+</div>
 
 @code {
     private LoginDto login = new();

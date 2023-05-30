@@ -106,7 +106,10 @@ namespace Sales.API.Helpers
                 {
                     currentUser.Photo = await _fileStorage.EditFileAsync(photoUser, "jpg", _container, currentUser.Photo);
                 }
-                currentUser.Photo = await _fileStorage.SaveFileAsync(photoUser, ".jpg", _container);
+                else
+                {
+                    currentUser.Photo = await _fileStorage.SaveFileAsync(photoUser, ".jpg", _container);
+                }
             }            
 
             IdentityResult update = await _userManager.UpdateAsync(currentUser);
