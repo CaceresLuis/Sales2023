@@ -156,6 +156,7 @@
         {
             string? message = await httpResponse.GetErrorMessageAsync();
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            loading = false;
             return;
         }
 

@@ -32,11 +32,16 @@ namespace Sales.API.Helpers
             _configuration = configuration;
         }
 
+        public async Task<string> GeneratePasswordResetTokenAsync(User user) => await _userManager.GeneratePasswordResetTokenAsync(user);
+
         public async Task<IdentityResult> ConfirmEmailAsync(User user, string token) => await _userManager.ConfirmEmailAsync(user, token);
         
         public async Task<string> GenerateEmailTokenConfirmAsync(User user) => await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password) => await _userManager.ResetPasswordAsync(user, token, password);
+
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPasswort, string newPasswort) => await _userManager.ChangePasswordAsync(user, currentPasswort, newPasswort);
+
 
         public async Task<User> GetUserAsync(string email)
         {

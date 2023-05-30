@@ -4,15 +4,13 @@ using Sales.Shared.DTOs;
 using Sales.Shared.Responses;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using System.Text.Encodings.Web;
-using System.Text;
-using Microsoft.AspNetCore.WebUtilities;
+using System.Text.RegularExpressions;
 
 namespace Sales.API.Controllers
 {
@@ -23,14 +21,12 @@ namespace Sales.API.Controllers
         private readonly IMapper _mapper;
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
-        private readonly SendMailConfiguration _sendMail;
 
-        public AccountsController(IUserHelper userHelper, IMapper mapper, IMailHelper mailHelper, IOptions<SendMailConfiguration> sendMail)
+        public AccountsController(IUserHelper userHelper, IMapper mapper, IMailHelper mailHelper)
         {
             _mapper = mapper;
             _userHelper = userHelper;
             _mailHelper = mailHelper;
-            _sendMail = sendMail.Value;
         }
 
         [HttpPost("Login")]
@@ -90,7 +86,7 @@ namespace Sales.API.Controllers
 
             string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
             string tokenLink = $"{Request.Scheme}://{Request.Host}{Url.Action("ConfirmEmail", "accounts", new { userid = user.Id, token = myToken })}";
-            var verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
+            string verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
 
             Response response = await _mailHelper.SendMail(user.FullName, user.Email,
                 "Sales - Confirmacion de cuenta",
@@ -140,15 +136,16 @@ namespace Sales.API.Controllers
 
             string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
             string tokenLink = $"{Request.Scheme}://{Request.Host}{Url.Action("ConfirmEmail", "accounts", new { userid = user.Id, token = myToken })}";
-            var verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
+            string verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
 
             Response response = await _mailHelper.SendMail(user.FullName, user.Email!,
             "Saless- Confirmación de cuenta",
             $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
 
-            if (!response.IsSuccess) return BadRequest(response.Message);
+            if (!response.IsSuccess) 
+                return BadRequest(response.Message);
 
-            return NoContent();     
+            return NoContent();
         }
 
         [HttpPut]
@@ -160,9 +157,50 @@ namespace Sales.API.Controllers
             if (!update.Succeeded)
                 return BadRequest(update.Error);
 
-            var userUpdated = await _userHelper.GetUserAsync(user.Email);
+            User userUpdated = await _userHelper.GetUserAsync(user.Email);
 
             return Ok(_userHelper.GetToken(userUpdated));
+        }
+
+        [HttpPost("RecoverPassword")]
+        public async Task<ActionResult> RecoverPassword([FromBody] ResetPaswordRequestDto email)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            User user = await _userHelper.GetUserAsync(email.Email);
+            if (user == null) return NotFound("Usuario no encontrado");
+
+            string myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+            string tokenLink = $"{Request.Scheme}://{email.UrlBase}{Url.Action("ResetPassword", "accounts", new { userid = user.Id, token = myToken })}";
+            string modifiedString = tokenLink.Replace("/api/Accounts", "");
+            string verificationLink = $"{HtmlEncoder.Default.Encode(modifiedString)}";
+
+            Response response = await _mailHelper.SendMail(user.FullName, user.Email!,
+                "Sales - Recuperación de contraseña",
+                $"<h1>Sales - Recuperación de contraseña</h1><p>para restaurar su contraseña por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
+            if (!response.IsSuccess) 
+                return BadRequest(response.Message);
+
+            return NoContent();
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDto resetPassword)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Completa todos los campos");
+
+            if (resetPassword.Password != resetPassword.ConfirmPassword)
+                return BadRequest("Las contraseñas no coinciden");
+
+            User user = await _userHelper.GetUserAsync(resetPassword.Email);
+            if (user == null) return NotFound("No se ha encontrado el usuario");
+
+            var result = await _userHelper.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
+            if(!result.Succeeded)
+                return BadRequest(result.Errors.FirstOrDefault());
+
+            return NoContent();
         }
     }
 }

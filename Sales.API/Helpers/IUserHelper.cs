@@ -23,5 +23,7 @@ namespace Sales.API.Helpers
         Task<CustomResponse> UpdateUserAsync(User user);
         Task<IdentityResult> ConfirmEmailAsync(User user, string token);
         Task<string> GenerateEmailTokenConfirmAsync(User user);
+        Task<string> GeneratePasswordResetTokenAsync(User user);
+        Task<IdentityResult> ResetPasswordAsync(User user, string token, string password);
     }
 }
