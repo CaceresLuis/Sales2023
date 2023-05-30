@@ -1,0 +1,33 @@
+﻿@page "/RegisterFinally"
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+@inject NavigationManager navigationManager
+
+<h3>No has recibido el correo</h3>
+<p>Has click en en boton para reenviar un mensaje</p>
+<button class="btn btn-primary" @onclick="ConfirmAccountAsync">Reenviar correo</button>
+
+@code {
+    private string? message;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string email { get; set; } = string.Empty;
+
+    protected async Task ConfirmAccountAsync()
+    {
+        var httpResponse = await repository.Get($"accounts/ResendToken?email={email}");
+        if (httpResponse.Error)
+        {
+            string? message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            navigationManager.NavigateTo("/");
+        }
+        else
+        {
+            await sweetAlertService.FireAsync("Confirmación", "se ha reenviado un un mensaje a tu correo.", SweetAlertIcon.Info);
+            navigationManager.NavigateTo("/Login");
+        }
+
+    }
+}

@@ -161,7 +161,7 @@
 
         loading = false;
         await sweetAlertService.FireAsync("Confirmacion", "Su cuenta ha sido creada, se ha enviado un correo para finalizar", SweetAlertIcon.Info);
-        navigationManager.NavigateTo("/");
+        navigationManager.NavigateTo($"/RegisterFinally?email={userDto.Email}");
     }
 
     private async Task CountryChangedAsync(ChangeEventArgs args)

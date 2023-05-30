@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using System.Text.Encodings.Web;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Sales.API.Controllers
 {
@@ -28,6 +31,27 @@ namespace Sales.API.Controllers
             _userHelper = userHelper;
             _mailHelper = mailHelper;
             _sendMail = sendMail.Value;
+        }
+
+        [HttpPost("Login")]
+        public async Task<ActionResult> LoginAsync(LoginDto login)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            SignInResult result = await _userHelper.LoginAsync(login);
+
+            if (result.IsLockedOut) return BadRequest("has sido bloqueado temporalmente, espera un minuto y vulve a intentar");
+            if (result.IsNotAllowed) return BadRequest("El usuario ha sido inhabilitado, sigue las instrucciones enviadas a tu correo");
+
+            if (!result.Succeeded)
+                return BadRequest("usuario o contraseña invalido");
+
+            User user = await _userHelper.GetUserAsync(login.Email);
+            if (user == null)
+                return BadRequest("Contraseña o correo erroneos");
+
+            return Ok(_userHelper.GetToken(user));
         }
 
         [HttpGet]
@@ -65,53 +89,16 @@ namespace Sales.API.Controllers
             }
 
             string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
-            string tokenLink = Url.Action("ConfirmEmail", "accounts", new
-            {
-                userid = user.Id,
-                token = myToken
-            }, HttpContext.Request.Scheme, _sendMail.UrlWEB);
+            string tokenLink = $"{Request.Scheme}://{Request.Host}{Url.Action("ConfirmEmail", "accounts", new { userid = user.Id, token = myToken })}";
+            var verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
 
             Response response = await _mailHelper.SendMail(user.FullName, user.Email,
                 "Sales - Confirmacion de cuenta",
-                $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={tokenLink}> click aqui</a></b></p>");
+                $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
             if (response.IsSuccess)
                 return Ok(true);
 
             return BadRequest(response.Message);
-        }
-
-        [HttpPost("Login")]
-        public async Task<ActionResult> LoginAsync(LoginDto login)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
-            SignInResult result = await _userHelper.LoginAsync(login);
-            if (!result.Succeeded)
-                return BadRequest("usuario o contraseña invalido");
-
-            if (result.IsLockedOut) return BadRequest("has sido bloqueado temporalmente, espera un minuto y vulve a intentar");
-            if (result.IsNotAllowed) return BadRequest("El usuario ha sido inhabilitado, sigue las instrucciones enviadas a tu correo");
-
-            User user = await _userHelper.GetUserAsync(login.Email);
-            if (user == null)
-                return BadRequest("Contraseña o correo erroneos");
-
-            return Ok(_userHelper.GetToken(user));
-        }
-
-        [HttpPut]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> Update(UpdateUserDto userDto)
-        {
-            User user = _mapper.Map<User>(userDto);
-            CustomResponse update = await _userHelper.UpdateUserAsync(user);
-            if (!update.Succeeded)
-                return BadRequest(update.Error);
-
-            var userUpdated = await _userHelper.GetUserAsync(user.Email);
-
-            return Ok(_userHelper.GetToken(userUpdated));
         }
 
         [HttpPost("changePassword")]
@@ -133,36 +120,49 @@ namespace Sales.API.Controllers
         [HttpGet("ConfirmEmail")]
         public async Task<ActionResult> ConfirmEmail(string userId, string token)
         {
-            token = token.Replace(" ", "+");
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+                return BadRequest("Url de confirmacion invalido");
+
             User user = await _userHelper.GetUserAsync(new Guid(userId));
             if (user == null) return NotFound("Usuario no encontrado");
 
             IdentityResult emailConfirm = await _userHelper.ConfirmEmailAsync(user, token);
-            if (!emailConfirm.Succeeded) return BadRequest(emailConfirm.Errors.FirstOrDefault());
+            string status = emailConfirm.Succeeded ? "La cuenta ha sido confirmada" : $"{emailConfirm.Errors.FirstOrDefault()}";
 
-            return NoContent();
+            return Ok(status);
         }
 
-        [HttpPost("ResendToken")]
-        public async Task<ActionResult> ResendToken([FromBody] EmailDto email)
+        [HttpGet("ResendToken")]
+        public async Task<ActionResult> ResendToken([FromQuery] string email)
         {
-            User user = await _userHelper.GetUserAsync(email.Email);
+            User user = await _userHelper.GetUserAsync(email);
             if (user is null) return NotFound("Usuario no encontrado");
 
             string myToken = await _userHelper.GenerateEmailTokenConfirmAsync(user);
-            string tokenLink = Url.Action("ConfirmEmail", "accounts", new
-            {
-                userId = user.Id,
-                token = myToken
-            }, HttpContext.Request.Scheme, _sendMail.UrlWEB);
+            string tokenLink = $"{Request.Scheme}://{Request.Host}{Url.Action("ConfirmEmail", "accounts", new { userid = user.Id, token = myToken })}";
+            var verificationLink = $"{HtmlEncoder.Default.Encode(tokenLink)}";
 
             Response response = await _mailHelper.SendMail(user.FullName, user.Email!,
             "Saless- Confirmación de cuenta",
-            $"<h1>Sales - Confirmación de cuenta</h1><p>Para habilitar el usuario, por favor hacer clic 'Confirmar Email':</p> <b><a href ={tokenLink}>Confirmar Email</a></b>");
+            $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
 
             if (!response.IsSuccess) return BadRequest(response.Message);
 
             return NoContent();     
+        }
+
+        [HttpPut]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Update(UpdateUserDto userDto)
+        {
+            User user = _mapper.Map<User>(userDto);
+            CustomResponse update = await _userHelper.UpdateUserAsync(user);
+            if (!update.Succeeded)
+                return BadRequest(update.Error);
+
+            var userUpdated = await _userHelper.GetUserAsync(user.Email);
+
+            return Ok(_userHelper.GetToken(userUpdated));
         }
     }
 }
