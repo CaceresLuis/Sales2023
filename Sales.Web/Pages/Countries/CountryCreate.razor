@@ -9,8 +9,10 @@
 <CountryForm @ref="countryForm" Country="Country" OnValidSubmit="Create" ReturnAction="Back"></CountryForm>
 
 @code {
-    private CountryDto Country = new();
     private CountryForm? countryForm;
+    private CountryDto Country = new();
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     private async Task Create()
     {
@@ -22,6 +24,7 @@
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Registrado", "El pais fue Registrado", SweetAlertIcon.Success);
         Back();
     }

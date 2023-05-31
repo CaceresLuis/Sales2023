@@ -8,8 +8,10 @@
 <CategoryForm @ref="categoryForm" Category="Category" OnValidSubmit="Create" ReturnAction="Back"></CategoryForm>
 
 @code {
-    private CategoryDto Category = new();
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
     private CategoryForm? categoryForm;
+    private CategoryDto Category = new();
 
     private async Task Create()
     {
@@ -21,6 +23,7 @@
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Registrado", "La categoria fue Registrada", SweetAlertIcon.Success);
         Back();
     }

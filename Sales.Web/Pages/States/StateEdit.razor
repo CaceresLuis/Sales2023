@@ -20,6 +20,8 @@ else
 
     [Parameter]
     public int StateId { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,6 +48,7 @@ else
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Actualizado", "El Estado/Departamento fue Actualizado", SweetAlertIcon.Success);
         Back();
     }

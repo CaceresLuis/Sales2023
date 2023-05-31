@@ -1,4 +1,4 @@
-﻿@page "/cities/edit/{cityId:int}"
+﻿@page "/cities/edit/{CityId:int}"
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
@@ -6,21 +6,23 @@
 
 <h3>Country Edit</h3>
 
-@if (city is null)
+@if (City is null)
 {
     <p>Cargando...</p>
 }
 else
 {
-    <CityForm @ref="cityForm" City="city" OnValidSubmit="EditAsync" ReturnAction="Back" />
+    <CityForm @ref="cityForm" City="City" OnValidSubmit="EditAsync" ReturnAction="Back" />
 }
 
 @code {
-    private CityDto? city;
+    private CityDto? City;
     private CityForm? cityForm;
 
     [Parameter]
     public int cityId { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,12 +34,12 @@ else
             Back();
         }
 
-        city = httpResponse.Response;
+        City = httpResponse.Response;
     }
 
     private async Task EditAsync()
     {
-        var httpResponse = await repository.Put($"cities/id?id={cityId}", city);
+        var httpResponse = await repository.Put($"cities/id?id={cityId}", City);
         if (httpResponse.Error)
         {
             string? message = await httpResponse.GetErrorMessageAsync();
@@ -45,6 +47,7 @@ else
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Actualizado", "Laciudad fue Actualizada", SweetAlertIcon.Success);
         Back();
     }
@@ -52,6 +55,6 @@ else
     private void Back()
     {
         cityForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo($"states/details/{city!.StateId}");
+        navigationManager.NavigateTo($"states/details/{City!.StateId}");
     }
 }

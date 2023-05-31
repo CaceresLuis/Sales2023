@@ -17,6 +17,8 @@ else
 @code {
     private CategoryDto? category;
     private CategoryForm? categoryForm;
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     [Parameter]
     public int Id { get; set; }
@@ -43,6 +45,7 @@ else
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Actualizado", "La categoria fue Actualizada", SweetAlertIcon.Success);
         Back();
     }

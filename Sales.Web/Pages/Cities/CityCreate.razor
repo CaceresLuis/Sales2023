@@ -13,10 +13,11 @@
 
     [Parameter]
     public int StateId { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     private async Task Create()
     {
-        Console.WriteLine(StateId);
         city.StateId = StateId;
         var httpResponse = await repository.Post("cities", city);
         if (httpResponse.Error)
@@ -28,6 +29,7 @@
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Registrada", "La ciudad fue registrada", SweetAlertIcon.Success);
         Back();
     }

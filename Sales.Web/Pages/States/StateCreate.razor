@@ -8,11 +8,13 @@
 <StateForm @ref="stateForm" State="state" OnValidSubmit="Create" ReturnAction="Back"></StateForm>
 
 @code {
-    private StateDto state = new();
     private StateForm? stateForm;
+    private StateDto state = new();
 
     [Parameter]
     public int CountryId { get; set; }
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
 
     private async Task Create()
     {
@@ -25,6 +27,7 @@
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         await sweetAlertService.FireAsync("Registrado", "El Estado fue Registrado", SweetAlertIcon.Success);
         Back();
     }

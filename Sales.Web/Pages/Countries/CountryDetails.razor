@@ -1,69 +1,75 @@
 ﻿@page "/countries/details/{Id:int}"
+@using Sales.Web.Pages.States;
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 
 @if (country is null)
 {
-    <p>Cargando...</p>
+    <div class="spinner-grow" />
 }
 else
 {
-
-
-    <h3>@country.Name</h3>
-    <div class="mb-2" style="display:flex; flex-wrap:wrap; align-items:center">
-        <div class="mb-2">
-            <a class="btn btn-dark mb-3" href="/countries"><i class="oi oi-arrow-thick-left"></i></a>
-            <a class="btn btn-primary mb-3" href="/states/create/@country.Id">Nuevo Estado<i class="oi oi-plus"></i></a>
-        </div>
-        <div class="mx-2">
-            <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
-        </div>
-        <div>
-            <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync">Filtrar</button>
-            <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync">Limpiar</button>
-        </div>
-    </div>
-    <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
     <GenericList MyList="states">
         <Body>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th style="width:220px">Estados / Departamentos</th>
-                        <th style="width:260px">Ciudad</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var state in states!)
-                    {
-                        <tr>
-                            <td>
-                                @state.Name
-                            </td>
-                            <td>
-                                @state.CitiesNumber
-                            </td>
-                            <td>
-                                <a class="btn btn-info" href="/states/details/@state.Id"><i class="oi oi-list"></i></a>
-                                <a class="btn btn-warning" href="/states/edit/@state.Id"><i class="oi oi-pencil"></i></a>
-                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(state.Id))><i class="oi oi-trash"></i></button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            <div class="card">
+                <div class="card-header">
+                    <span>
+                        <a class="btn btn-info float-lg-start" href="/countries"><i class="oi oi-arrow-thick-left"></i></a>
+                        <div class="oi oi-flag mx-2 text-xl-start">@country.Name</div>
+                        <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(country.Id))>Nuevo Estado<i class="oi oi-plus"></i></a>
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="sm" style="display:flex; flex-wrap:wrap; align-items:center">
+                        <div>
+                            <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
+                        </div>
+                        <div class="mx-1">
+                            <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" />Filtrar</button>
+                            <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync"><i class="oi oi-ban" />Limpiar</button>
+                        </div>
+                    </div>
+                    <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width:220px">Estados / Departamentos</th>
+                                <th style="width:260px">Ciudad</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var state in states!)
+                            {
+                                <tr>
+                                    <td>
+                                        @state.Name
+                                    </td>
+                                    <td>
+                                        @state.CitiesNumber
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-info" href="/states/details/@state.Id"><i class="oi oi-list"></i></a>
+                                        <a class="btn btn-warning" @onclick=@(() => ShowModal(state.Id, true))><i class="oi oi-pencil"></i></a>
+                                        <button class="btn btn-danger" @onclick=@(() => DeleteAsync(state.Id))><i class="oi oi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
         </Body>
     </GenericList>
 }
 
 @code {
+    private int totalPages;
+    private int currentPage = 1;
     private CountryDto? country;
     private List<StateDto>? states;
-    private int currentPage = 1;
-    private int totalPages;
     [Parameter] public int Id { get; set; }
 
     [Parameter]
@@ -72,6 +78,8 @@ else
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; } = "";
+    [CascadingParameter]
+    IModalService Modal { get; set; } = default!;
 
     protected async override Task OnInitializedAsync()
     {
@@ -89,20 +97,8 @@ else
         if (!string.IsNullOrWhiteSpace(Page))
             page = Convert.ToInt32(Page);
 
-        string pagesUrl = string.Empty;
-        string stateUrl = string.Empty;
-
-        if (string.IsNullOrEmpty(Filter))
-        {
-            pagesUrl = $"States/totalPages?id={Id}";
-            stateUrl = $"States?id={Id}&page={page}";
-        }
-        else
-        {
-            pagesUrl = $"States/totalPages?id={Id}&filter={Filter}";
-            stateUrl = $"States?id={Id}&page={page}&filter={Filter}";
-        }
-
+        string pagesUrl = (string.IsNullOrEmpty(Filter)) ? $"States/totalPages?id={Id}" : $"States/totalPages?id={Id}&filter={Filter}";
+        string stateUrl = (string.IsNullOrEmpty(Filter)) ? $"States?id={Id}&page={page}" : $"States?id={Id}&page={page}&filter={Filter}";
 
         var httpResponsePages = await repository.Get<int>(pagesUrl);
         var httpResponseStates = await repository.Get<List<StateDto>>(stateUrl);
@@ -157,5 +153,25 @@ else
         int page = 1;
         await LoadAsync(page);
         await SelectedPageAsync(page);
+    }
+
+    private async Task ShowModal(int id = 0, bool isEdit = false)
+    {
+        IModalReference modalReference;
+
+        if (isEdit)
+        {
+            modalReference = Modal.Show<StateEdit>(string.Empty, new ModalParameters().Add("StateId", id));
+        }
+        else
+        {
+            modalReference = Modal.Show<StateCreate>(string.Empty, new ModalParameters().Add("CountryId", id));
+        }
+
+        var result = await modalReference.Result;
+        if (result.Confirmed)
+        {
+            await LoadAsync();
+        }
     }
 }
