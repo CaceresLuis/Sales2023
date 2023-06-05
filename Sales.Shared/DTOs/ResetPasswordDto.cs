@@ -4,10 +4,7 @@ namespace Sales.Shared.DTOs
 {
     public class ResetPasswordDto
     {
-        [Display(Name = "Email")]
-        [EmailAddress(ErrorMessage = "Debes ingresar un correo válido.")]
-        [Required(ErrorMessage = "El campo {0} es obligatorio.")]
-        public string Email { get; set; } = null!;
+        public string UserId { get; set; } = null!;
 
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]

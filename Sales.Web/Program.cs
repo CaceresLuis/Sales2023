@@ -1,4 +1,5 @@
 using Sales.Web;
+using Blazored.Modal;
 using Sales.Web.Auth;
 using Sales.Web.Repositories;
 using Sales.Web.Repositories.Interfaces;
@@ -6,8 +7,6 @@ using Microsoft.AspNetCore.Components.Web;
 using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Sales.Web.Shared;
-using Blazored.Modal;
 
 WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

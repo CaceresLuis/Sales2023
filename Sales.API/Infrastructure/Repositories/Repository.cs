@@ -36,5 +36,7 @@ namespace Sales.API.Infrastructure.Repositories
             _dbSet.Remove(entity);
             return await _context.SaveChangesAsync() > 0;
         }
+
+
     }
 }

@@ -136,7 +136,7 @@ namespace Sales.API.Helpers
 
         public async Task<SignInResult> LoginAsync(LoginDto login)
         {
-            return await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, false);
+            return await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, true);
         }
 
         public async Task LogoutAsync()

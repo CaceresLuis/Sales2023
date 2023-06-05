@@ -11,6 +11,7 @@ using Sales.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using System.Text.RegularExpressions;
+using System.Security.Policy;
 
 namespace Sales.API.Controllers
 {
@@ -37,8 +38,10 @@ namespace Sales.API.Controllers
 
             SignInResult result = await _userHelper.LoginAsync(login);
 
-            if (result.IsLockedOut) return BadRequest("has sido bloqueado temporalmente, espera un minuto y vulve a intentar");
-            if (result.IsNotAllowed) return BadRequest("El usuario ha sido inhabilitado, sigue las instrucciones enviadas a tu correo");
+            if (result.IsLockedOut) 
+                return BadRequest("has sido bloqueado temporalmente, espera un minuto y vulve a intentar");
+            if (result.IsNotAllowed) 
+                return BadRequest("El usuario ha sido inhabilitado, sigue las instrucciones enviadas a tu correo");
 
             if (!result.Succeeded)
                 return BadRequest("usuario o contraseña invalido");
@@ -193,7 +196,8 @@ namespace Sales.API.Controllers
             if (resetPassword.Password != resetPassword.ConfirmPassword)
                 return BadRequest("Las contraseñas no coinciden");
 
-            User user = await _userHelper.GetUserAsync(resetPassword.Email);
+            Guid userId =  Guid.Parse(resetPassword.UserId);
+            User user = await _userHelper.GetUserAsync(userId);
             if (user == null) return NotFound("No se ha encontrado el usuario");
 
             var result = await _userHelper.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
