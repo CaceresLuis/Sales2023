@@ -2,9 +2,9 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
 using Sales.API.Infrastructure.Repositories.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Sales.API.Controllers
 {
@@ -57,7 +57,8 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            return Ok(await _stateRepository.AddAsync(_mapper.Map<State>(stateDto)));
+            _stateRepository.AddAsync(_mapper.Map<State>(stateDto));
+            return Ok(await _stateRepository.SaveChangesAsync());
 
         }
 
@@ -71,7 +72,8 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            return Ok(await _stateRepository.UpdateAsync(_mapper.Map<State>(stateDto)));
+            _stateRepository.UpdateAsync(_mapper.Map<State>(stateDto));
+            return Ok(await _stateRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
@@ -81,7 +83,8 @@ namespace Sales.API.Controllers
             if (state is null)
                 return NotFound();
 
-            return Ok(await _stateRepository.DeleteAsync(state));
+            _stateRepository.DeleteAsync(state);
+            return Ok(await _stateRepository.SaveChangesAsync());
         }
 
         [HttpGet("totalPages")]

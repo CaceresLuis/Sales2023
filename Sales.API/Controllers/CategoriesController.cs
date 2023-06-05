@@ -45,8 +45,9 @@ namespace Sales.API.Controllers
             categoryDto.Id = 0;
             if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
                 return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
+            _categoryRepository.AddAsync(_mapper.Map<Category>(categoryDto));
 
-            return Ok(await _categoryRepository.AddAsync(_mapper.Map<Category>(categoryDto)));
+            return Ok(await _categoryRepository.SaveChangesAsync());
 
         }
 
@@ -59,7 +60,8 @@ namespace Sales.API.Controllers
             if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
                 return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
 
-            return Ok(await _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto)));
+            _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto));
+            return Ok(await _categoryRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
@@ -69,7 +71,8 @@ namespace Sales.API.Controllers
             if (category is null)
                 return NotFound("La categoria ya no existe");
 
-            return Ok(await _categoryRepository.DeleteAsync(category));
+            _categoryRepository.DeleteAsync(category);
+            return Ok(await _categoryRepository.SaveChangesAsync());
         }
 
         [HttpGet("totalPages")]

@@ -28,7 +28,15 @@ namespace Sales.API.Services
 
         public async Task<bool> AddProductAsync(SimpleProductDto productDto)
         {
-            Product product = _mapper.Map<Product>(productDto);
+            Product product = new()
+            {
+                Description = productDto.Description,
+                Name = productDto.Name,
+                Price = productDto.Price,
+                Stock = productDto.Stock,
+                ProductCategories = new List<ProductCategory>(),
+                ProductImages = new List<ProductImage>()
+            };
 
             if (productDto.ProductImages.Any())
             {
@@ -38,7 +46,8 @@ namespace Sales.API.Services
                     byte[] fileBytes = File.ReadAllBytes(filePaht);
                     string imagePaht = await _fileStorage.SaveFileAsync(fileBytes, ".jpg", "products");
                     ProductImage addImage = new() { Image = imagePaht, Product = product };
-                    await _productImageRepository.AddAsync(addImage);
+                    product.ProductImages.Add(addImage);
+                     _productImageRepository.AddAsync(addImage);
                 }
             }
 
@@ -50,12 +59,13 @@ namespace Sales.API.Services
                     if (category != null)
                     {
                         ProductCategory productCategory = new() { Category = category, Product = product };
-                        await _productCategoryRepository.AddAsync(productCategory);
+                        product.ProductCategories.Add(productCategory);
+                        _productCategoryRepository.AddAsync(productCategory);
                     }
                 }
             }
-            //return await _productRepository.AddAsync(product);
-            return true;
+            _productRepository.AddAsync(product);
+            return await _productCategoryRepository.SaveChangesAsync();
         }
     }
 }

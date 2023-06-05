@@ -58,7 +58,8 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            return Ok(await _cityRepository.AddAsync(_mapper.Map<City>(cityDto)));
+            _cityRepository.AddAsync(_mapper.Map<City>(cityDto));
+            return Ok(await _cityRepository.SaveChangesAsync());
         }
 
         [HttpPut("id")]
@@ -71,7 +72,8 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            return Ok(await _cityRepository.UpdateAsync(_mapper.Map<City>(cityDto)));
+            _cityRepository.UpdateAsync(_mapper.Map<City>(cityDto));
+            return Ok(await _cityRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
@@ -81,7 +83,8 @@ namespace Sales.API.Controllers
             if (city is null)
                 return NotFound();
 
-            return Ok(await _cityRepository.DeleteAsync(city));
+            _cityRepository.DeleteAsync(city);
+            return Ok(await _cityRepository.SaveChangesAsync());
         }
 
         [HttpGet("totalPages")]

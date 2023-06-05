@@ -4,6 +4,7 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 using Sales.API.Infrastructure.Repositories;
+using Sales.API.Services.Interfaces;
 
 namespace Sales.API.Controllers
 {
@@ -13,11 +14,13 @@ namespace Sales.API.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
+        private readonly IProductService _productService;
 
-        public ProductsController(IProductRepository productRepository, IMapper mapper)
+        public ProductsController(IProductRepository productRepository, IMapper mapper, IProductService productService)
         {
             _mapper = mapper;
             _productRepository = productRepository;
+            _productService = productService;
         }
 
         [HttpGet]
@@ -48,15 +51,14 @@ namespace Sales.API.Controllers
         //    return Ok(await _productRepository.UpdateAsync(product));
         //}
 
-        //[HttpPost]
-        //public async Task<ActionResult> PostProduct(SimpleProductDto productDto)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return BadRequest();
+        [HttpPost]
+        public async Task<ActionResult> PostProduct(SimpleProductDto productDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
 
-        //    Product product = _mapper.Map<Product>(productDto);
-        //    return Ok(await _productRepository.AddAsync(product));
-        //}
+            return Ok(await _productService.AddProductAsync(productDto));
+        }
 
         //[HttpDelete("{id}")]
         //public async Task<IActionResult> DeleteProduct(int id)

@@ -7,15 +7,15 @@ using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Infrastructure.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
         private readonly SalesDataContex _context;
-        public ProductRepository(SalesDataContex context) 
+        public ProductRepository(SalesDataContex context) : base(context)
         {
             _context = context;
         }
 
-        public async Task<Product> GetByIdAsync(int id) => await _context.Products.Include(p => p.ProductImages).Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).FirstOrDefaultAsync(p => p.Id == id);
+        public new async Task<Product> GetByIdAsync(int id) => await _context.Products.Include(p => p.ProductImages).Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).FirstOrDefaultAsync(p => p.Id == id);
 
         public async Task<IEnumerable<Product>> GetAllAsync(PaginationDto pagination)
         {
@@ -27,7 +27,6 @@ namespace Sales.API.Infrastructure.Repositories
 
             return await queriable.OrderBy(p => p.Name).Paginate(pagination).ToListAsync();
         }
-
         public async Task<double> GetPages(PaginationDto pagination)
         {
             IQueryable<Product> queriable = _context.Products.AsQueryable();

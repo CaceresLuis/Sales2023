@@ -56,7 +56,8 @@ namespace Sales.API.Controllers
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            return Ok(await _countryRepository.AddAsync(_mapper.Map<Country>(countryDto)));
+            _countryRepository.AddAsync(_mapper.Map<Country>(countryDto));
+            return Ok(await _countryRepository.SaveChangesAsync());
 
         }
 
@@ -69,7 +70,8 @@ namespace Sales.API.Controllers
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            return Ok(await _countryRepository.UpdateAsync(_mapper.Map<Country>(countryDto)));
+            _countryRepository.UpdateAsync(_mapper.Map<Country>(countryDto));
+            return Ok(await _countryRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
@@ -79,7 +81,8 @@ namespace Sales.API.Controllers
             if (country is null)
                 return NotFound();
 
-            return Ok(await _countryRepository.DeleteAsync(country));
+            _countryRepository.DeleteAsync(country);
+            return Ok(await _countryRepository.SaveChangesAsync());
         }
 
         [HttpGet("totalPages")]
