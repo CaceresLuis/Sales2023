@@ -30,6 +30,12 @@ namespace Sales.API.Data.Entities
 
         public ICollection<ProductCategory> ProductCategories { get; set; }
 
+        public DateTime CrateAt { get; set; }
+        public bool IsUpdated { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime DeleteAt { get; set; }
+
         [Display(Name = "Productos")]
         public int ProductCategoryCount => ProductCategories == null ? 0 : ProductCategories.Count;
 

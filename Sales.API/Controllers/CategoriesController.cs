@@ -3,6 +3,8 @@ using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Sales.API.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Sales.API.Controllers
 {
@@ -39,16 +41,30 @@ namespace Sales.API.Controllers
             return Ok(category);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("DeletedCategories")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllDeletedAsync([FromQuery] PaginationDto pagination)
+        {
+            IEnumerable<Category> categories = await _categoryRepository.GetAllDeletedAsync(pagination);
+            if (!categories.Any())
+                return NotFound("Aun no hay registro de borradas categorias");
+
+            return Ok(_mapper.Map<IEnumerable<CategoryDto>>(categories));
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<bool>> AddCategorie(CategoryDto categoryDto)
         {
             categoryDto.Id = 0;
             if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
                 return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
-            _categoryRepository.AddAsync(_mapper.Map<Category>(categoryDto));
+
+            Category category = _mapper.Map<Category>(categoryDto);
+            category.CrateAt = DateTime.UtcNow;
+            _categoryRepository.AddAsync(category);
 
             return Ok(await _categoryRepository.SaveChangesAsync());
-
         }
 
         [HttpPut("id")]
@@ -60,7 +76,11 @@ namespace Sales.API.Controllers
             if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
                 return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
 
-            _categoryRepository.UpdateAsync(_mapper.Map<Category>(categoryDto));
+            Category category = _mapper.Map<Category>(categoryDto);
+            category.UpdateAt = DateTime.UtcNow;
+            category.IsUpdated = true;
+            _categoryRepository.UpdateAsync(category);
+
             return Ok(await _categoryRepository.SaveChangesAsync());
         }
 
@@ -71,7 +91,10 @@ namespace Sales.API.Controllers
             if (category is null)
                 return NotFound("La categoria ya no existe");
 
-            _categoryRepository.DeleteAsync(category);
+            category.DeleteAt = DateTime.UtcNow;
+            category.IsDeleted = true;
+            _categoryRepository.UpdateAsync(category);
+
             return Ok(await _categoryRepository.SaveChangesAsync());
         }
 

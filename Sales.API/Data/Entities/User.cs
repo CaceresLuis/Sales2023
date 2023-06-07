@@ -32,6 +32,12 @@ namespace Sales.API.Data.Entities
         [Display(Name = "Tipo de usuario")]
         public UserType UserType { get; set; }
 
+        public DateTime CrateAt { get; set; }
+        public bool IsUpdated { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime DeleteAt { get; set; }
+
         public City City { get; set; }
 
         [Display(Name = "Ciudad")]

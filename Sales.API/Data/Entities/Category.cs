@@ -15,5 +15,11 @@ namespace Sales.API.Data.Entities
 
         [Display(Name = "Productos")]
         public int ProductCategoryCount => ProductCategories == null ? 0 : ProductCategories.Count;
+
+        public DateTime CrateAt{ get; set; }
+        public bool IsUpdated { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime DeleteAt{ get; set; }
     }
 }

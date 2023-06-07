@@ -19,7 +19,16 @@ namespace Sales.API.Infrastructure.Repositories
         {
             IQueryable<Category> queriable = _context.Categories.AsQueryable();
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
-                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()) && !c.IsDeleted);
+
+            return await queriable.OrderBy(c => c.Name).Paginate(pagination).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetAllDeletedAsync(PaginationDto pagination)
+        {
+            IQueryable<Category> queriable = _context.Categories.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()) && c.IsDeleted);
 
             return await queriable.OrderBy(c => c.Name).Paginate(pagination).ToListAsync();
         }
@@ -29,7 +38,7 @@ namespace Sales.API.Infrastructure.Repositories
             IQueryable<Category> queriable = _context.Categories.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
-                queriable = queriable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()) && !c.IsDeleted);
 
             double count = await queriable.CountAsync();
             return Math.Ceiling(count / pagination.RecordsNumber);

@@ -41,7 +41,7 @@ namespace Sales.API.Data
 
         private async Task CheckProductsAsync()
         {
-            if(!_context.Products.Any())
+            if (!_context.Products.Any())
             {
                 await AddProductAsync("Adidas Barracuda", 270000M, 12F, new List<string>() { "Calzado", "Deportes" }, new List<string>() { "adidas_barracuda.png" });
                 await AddProductAsync("Adidas Superstar", 250000M, 12F, new List<string>() { "Calzado", "Deportes" }, new List<string>() { "Adidas_superstar.png" });
@@ -78,31 +78,32 @@ namespace Sales.API.Data
                 Name = name,
                 Price = price,
                 Stock = stock,
+                CrateAt = DateTime.UtcNow,
                 ProductImages = new List<ProductImage>(),
                 ProductCategories = new List<ProductCategory>()
             };
 
-            foreach (var categoryName in categories)
+            foreach (string categoryName in categories)
             {
-                var category =  await _context.Categories.FirstOrDefaultAsync(c => c.Name == categoryName);
-                if(category != null)
+                Category category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == categoryName);
+                if (category != null)
                     product.ProductCategories.Add(new ProductCategory { Category = category });
             }
 
-            foreach (var image in images)
+            foreach (string image in images)
             {
-                var filePaht = $"{Environment.CurrentDirectory}\\Helpers\\products\\{image}";
-                var fileBytes = File.ReadAllBytes(filePaht);
-                var imagePaht = await _fileStorage.SaveFileAsync(fileBytes, ".jpg", "products");
+                string filePaht = $"{Environment.CurrentDirectory}\\Helpers\\products\\{image}";
+                byte[] fileBytes = File.ReadAllBytes(filePaht);
+                string imagePaht = await _fileStorage.SaveFileAsync(fileBytes, ".jpg", "products");
                 product.ProductImages.Add(new ProductImage { Image = imagePaht });
-                _context.ProductImages.Add(new ProductImage { Image= imagePaht, Product = product });
+                _context.ProductImages.Add(new ProductImage { Image = imagePaht, Product = product });
             }
             _context.Products.Add(product);
         }
 
-        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address,string image, UserType userType)
+        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, string image, UserType userType)
         {
-            var user = await _userHelper.GetUserAsync(email);
+            User user = await _userHelper.GetUserAsync(email);
             if (user == null)
             {
                 user = new User
@@ -115,13 +116,14 @@ namespace Sales.API.Data
                     PhoneNumber = phone,
                     Address = address,
                     Photo = image,
+                    CrateAt = DateTime.UtcNow,
                     City = _context.Cities.FirstOrDefault(c => c.Name == "Jiquilisco"),
                     UserType = userType
                 };
 
                 await _userHelper.AddUserAsync(user, _userDefault.Password);
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());
-                var tokenEmail = await _userHelper.GenerateEmailTokenConfirmAsync(user);
+                string tokenEmail = await _userHelper.GenerateEmailTokenConfirmAsync(user);
                 await _userHelper.ConfirmEmailAsync(user, tokenEmail);
             }
             return user;
@@ -147,20 +149,29 @@ namespace Sales.API.Data
                         if (country == null)
                         {
                             country = new()
-                            { Name = countryResponse.Name!, States = new List<State>() };
+                            {
+                                Name = countryResponse.Name!,
+                                CrateAt = DateTime.UtcNow,
+                                States = new List<State>()
+                            };
                             Response responseStates = await _apiService.GetListAsync<StateResponse>("/v1", $"/countries/{countryResponse.Iso2}/states");
                             if (responseStates.IsSuccess)
                             {
                                 List<StateResponse> states = (List<StateResponse>)responseStates.Result!;
-                                if(states.Count > 50)
-                                     states = states.Take(50).ToList();
+                                if (states.Count > 50)
+                                    states = states.Take(50).ToList();
 
                                 foreach (StateResponse stateResponse in states!)
                                 {
                                     State state = country.States!.FirstOrDefault(s => s.Name == stateResponse.Name!)!;
                                     if (state == null)
                                     {
-                                        state = new() { Name = stateResponse.Name!, Cities = new List<City>() };
+                                        state = new()
+                                        {
+                                            Name = stateResponse.Name!,
+                                            CrateAt = DateTime.UtcNow,
+                                            Cities = new List<City>()
+                                        };
                                         Response responseCities = await _apiService.GetListAsync<CityResponse>("/v1", $"/countries/{countryResponse.Iso2}/states/{stateResponse.Iso2}/cities");
                                         if (responseCities.IsSuccess)
                                         {
@@ -203,24 +214,24 @@ namespace Sales.API.Data
 
             if (!_context.Categories.Any())
             {
-                _context.Categories.Add(new Category { Name = "Apple" });
-                _context.Categories.Add(new Category { Name = "Autos" });
-                _context.Categories.Add(new Category { Name = "Belleza" });
-                _context.Categories.Add(new Category { Name = "Calzado" });
-                _context.Categories.Add(new Category { Name = "Comida" });
-                _context.Categories.Add(new Category { Name = "Cosmeticos" });
-                _context.Categories.Add(new Category { Name = "Deportes" });
-                _context.Categories.Add(new Category { Name = "Erótica" });
-                _context.Categories.Add(new Category { Name = "Ferreteria" });
-                _context.Categories.Add(new Category { Name = "Gamer" });
-                _context.Categories.Add(new Category { Name = "Hogar" });
-                _context.Categories.Add(new Category { Name = "Jardín" });
-                _context.Categories.Add(new Category { Name = "Jugetes" });
-                _context.Categories.Add(new Category { Name = "Lenceria" });
-                _context.Categories.Add(new Category { Name = "Mascotas" });
-                _context.Categories.Add(new Category { Name = "Nutrición" });
-                _context.Categories.Add(new Category { Name = "Ropa" });
-                _context.Categories.Add(new Category { Name = "Tecnología" });
+                _context.Categories.Add(new Category { Name = "Apple", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Autos", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Belleza", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Calzado", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Comida", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Cosmeticos", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Deportes", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Erótica", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Ferreteria", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Gamer", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Hogar", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Jardín", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Jugetes", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Lenceria", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Mascotas", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Nutrición", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Ropa", CrateAt = DateTime.UtcNow });
+                _context.Categories.Add(new Category { Name = "Tecnología", CrateAt = DateTime.UtcNow });
             }
 
             await _context.SaveChangesAsync();
