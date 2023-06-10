@@ -28,15 +28,15 @@ namespace Sales.API.Data
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
-            await CheckAsync();
-            await CheckRolesAsync();
-            await CheckProductsAsync();
-            await CheckUserAsync("201", "Amy", "Lee", "loveamylee@yopmail.com", "43785695", "Usa", "amy.jpg", UserType.User);
-            await CheckUserAsync("201", "Floki", "God", "flokigod@yopmail.com", "85471235", "Norwa", "floki.jpg", UserType.User);
-            await CheckUserAsync("201", "Ronni", "Radke", "ronnicrack@yopmail.com", "45781263", "Usa", "ronni.jpg", UserType.User);
-            await CheckUserAsync("201", "Ragnar", "Lodbrok", "ragnarxdnew@yopmail.com", "45781263", "Norwa", "ragnar.jpg", UserType.User);
-            await CheckUserAsync("201", "Laguertha", "Lodbrok", "lagerthapatrona@yopmail.com", "87956412", "Norwa", "lagertha.jpg", UserType.User);
-            await CheckUserAsync("200", "Luis", "Caceres", _userDefault.Email, _userDefault.PhoneNumber, "Jiqui", "caceres.jpg", UserType.Admin);
+            //await CheckAsync();
+            //await CheckRolesAsync();
+            //await CheckProductsAsync();
+            await CheckUserAsync("201", "Amy", "Lee", "loveamylee@yopmail.com", "43785695", "Usa", UserType.User);
+            await CheckUserAsync("202", "Floki", "God", "flokigod@yopmail.com", "85471235", "Norwa", UserType.User);
+            await CheckUserAsync("203", "Ronni", "Radke", "ronnicrack@yopmail.com", "45781263", "Usa", UserType.User);
+            await CheckUserAsync("204", "Ragnar", "Lodbrok", "ragnarxdnew@yopmail.com", "45781263", "Norwa", UserType.User);
+            await CheckUserAsync("205", "Laguertha", "Lodbrok", "lagerthapatrona@yopmail.com", "87956412", "Norwa", UserType.User);
+            await CheckUserAsync("206", "Luis", "Caceres", _userDefault.Email, _userDefault.PhoneNumber, "Jiqui", UserType.Admin);
         }
 
         private async Task CheckProductsAsync()
@@ -101,7 +101,7 @@ namespace Sales.API.Data
             _context.Products.Add(product);
         }
 
-        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, string image, UserType userType)
+        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
         {
             User user = await _userHelper.GetUserAsync(email);
             if (user == null)
@@ -115,7 +115,6 @@ namespace Sales.API.Data
                     UserName = email,
                     PhoneNumber = phone,
                     Address = address,
-                    Photo = image,
                     CrateAt = DateTime.UtcNow,
                     City = _context.Cities.FirstOrDefault(c => c.Name == "Jiquilisco"),
                     UserType = userType

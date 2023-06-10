@@ -42,7 +42,6 @@ namespace Sales.API.Controllers
             return Ok(_mapper.Map<CountryDto>(country));
         }
 
-        [AllowAnonymous]
         [HttpGet("combo")]
         public async Task<ActionResult> GetCombo()
         {
@@ -51,17 +50,19 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> AddCountry(SimpleCountryDto countryDto)
         {
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            _countryRepository.AddAsync(_mapper.Map<Country>(countryDto));
+            _countryRepository.Add(_mapper.Map<Country>(countryDto));
             return Ok(await _countryRepository.SaveChangesAsync());
 
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> UpdateCountry(int id, SimpleCountryDto countryDto)
         {
             if (!ModelState.IsValid || countryDto.Id != id)
@@ -70,18 +71,19 @@ namespace Sales.API.Controllers
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            _countryRepository.UpdateAsync(_mapper.Map<Country>(countryDto));
+            _countryRepository.Update(_mapper.Map<Country>(countryDto));
             return Ok(await _countryRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> DeleteCountry(int id)
         {
             Country country = await _countryRepository.GetByIdAsync(id);
             if (country is null)
                 return NotFound();
 
-            _countryRepository.DeleteAsync(country);
+            _countryRepository.Delete(country);
             return Ok(await _countryRepository.SaveChangesAsync());
         }
 

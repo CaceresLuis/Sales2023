@@ -32,5 +32,12 @@ namespace Sales.Shared.DTOs
 
         public ICollection<ProductImageDto>? ProductImages { get; set; }
 
+        public string FistImage => ProductImages!.FirstOrDefault()!.Image;
+
+        public DateTime CrateAt { get; set; }
+        public bool IsUpdated { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime DeleteAt { get; set; }
     }
 }

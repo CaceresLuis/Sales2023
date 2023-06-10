@@ -2,12 +2,13 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Sales.API.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -34,7 +35,7 @@ namespace Sales.API.Controllers
         [HttpGet("id")]
         public async Task<ActionResult<CategoryDto>> GetAsync(int id)
         {
-            Category category = await _categoryRepository.GetByIdAsync(id);
+            Category category = await _categoryRepository.GetByIdActiveAsync(id);
             if (category is null)
                 return NotFound();
 
@@ -52,8 +53,8 @@ namespace Sales.API.Controllers
             return Ok(_mapper.Map<IEnumerable<CategoryDto>>(categories));
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> AddCategorie(CategoryDto categoryDto)
         {
             categoryDto.Id = 0;
@@ -62,29 +63,31 @@ namespace Sales.API.Controllers
 
             Category category = _mapper.Map<Category>(categoryDto);
             category.CrateAt = DateTime.UtcNow;
-            _categoryRepository.AddAsync(category);
+            _categoryRepository.Add(category);
 
             return Ok(await _categoryRepository.SaveChangesAsync());
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> UpdateCategorie(int id, CategoryDto categoryDto)
         {
             if (!ModelState.IsValid || categoryDto.Id != id)
                 return BadRequest("Datos invalidos");
 
-            if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
+            Category category = await _categoryRepository.GetByIdAsync(id);
+            if (category.Name == categoryDto.Name)
                 return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
 
-            Category category = _mapper.Map<Category>(categoryDto);
             category.UpdateAt = DateTime.UtcNow;
             category.IsUpdated = true;
-            _categoryRepository.UpdateAsync(category);
+            _categoryRepository.Update(category);
 
             return Ok(await _categoryRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> DeleteCategorie(int id)
         {
             Category category = await _categoryRepository.GetByIdAsync(id);
@@ -93,7 +96,7 @@ namespace Sales.API.Controllers
 
             category.DeleteAt = DateTime.UtcNow;
             category.IsDeleted = true;
-            _categoryRepository.UpdateAsync(category);
+            _categoryRepository.Update(category);
 
             return Ok(await _categoryRepository.SaveChangesAsync());
         }

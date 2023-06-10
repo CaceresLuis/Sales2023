@@ -6,7 +6,7 @@
     <div class="mb-3">
         <label>Pais:</label>
         <div>
-            <InputText class="form-control" @bind-Value="Category.Name" />
+            <InputText type="text" class="form-control"  @bind-Value="Category.Name" />
             <ValidationMessage For="@(() => Category.Name)" />
         </div>
     </div>

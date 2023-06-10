@@ -4,10 +4,12 @@ using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class StatesController : ControllerBase
@@ -50,6 +52,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> AddState(StateDto stateDto)
         {
             stateDto.Id = 0;
@@ -57,12 +60,13 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _stateRepository.AddAsync(_mapper.Map<State>(stateDto));
+            _stateRepository.Add(_mapper.Map<State>(stateDto));
             return Ok(await _stateRepository.SaveChangesAsync());
 
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> UpdateState(int id, StateDto stateDto)
         {
             if (!ModelState.IsValid || stateDto.Id != id)
@@ -72,18 +76,19 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _stateRepository.UpdateAsync(_mapper.Map<State>(stateDto));
+            _stateRepository.Update(_mapper.Map<State>(stateDto));
             return Ok(await _stateRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> DeleteState(int id)
         {
             State state = await _stateRepository.GetByIdAsync(id);
             if (state is null)
                 return NotFound();
 
-            _stateRepository.DeleteAsync(state);
+            _stateRepository.Delete(state);
             return Ok(await _stateRepository.SaveChangesAsync());
         }
 

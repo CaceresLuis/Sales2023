@@ -10,13 +10,11 @@ using Microsoft.AspNetCore.Authorization;
 using Sales.API.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using System.Text.RegularExpressions;
-using System.Security.Policy;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
-    [ApiController]
     public class AccountsController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -38,9 +36,9 @@ namespace Sales.API.Controllers
 
             SignInResult result = await _userHelper.LoginAsync(login);
 
-            if (result.IsLockedOut) 
+            if (result.IsLockedOut)
                 return BadRequest("has sido bloqueado temporalmente, espera un minuto y vulve a intentar");
-            if (result.IsNotAllowed) 
+            if (result.IsNotAllowed)
                 return BadRequest("El usuario ha sido inhabilitado, sigue las instrucciones enviadas a tu correo");
 
             if (!result.Succeeded)
@@ -54,7 +52,6 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Get()
         {
             User getUser = await _userHelper.GetUserAsync(User.Identity.Name!);
@@ -101,7 +98,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost("changePassword")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "Admin, User")]
         public async Task<ActionResult> ChangePasswordAsync(ChangePasswordDto changePassword)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -145,14 +142,14 @@ namespace Sales.API.Controllers
             "Saless- Confirmación de cuenta",
             $"<h1>Sales - Confirmacion de cuenta</h1><p>para habilitar el usuario por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
 
-            if (!response.IsSuccess) 
+            if (!response.IsSuccess)
                 return BadRequest(response.Message);
 
             return NoContent();
         }
 
         [HttpPut]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "Admin, User")]
         public async Task<ActionResult> Update(UpdateUserDto userDto)
         {
             User user = _mapper.Map<User>(userDto);
@@ -181,7 +178,7 @@ namespace Sales.API.Controllers
             Response response = await _mailHelper.SendMail(user.FullName, user.Email!,
                 "Sales - Recuperación de contraseña",
                 $"<h1>Sales - Recuperación de contraseña</h1><p>para restaurar su contraseña por favor hacer<b><a href={verificationLink}> click aqui</a></b></p>");
-            if (!response.IsSuccess) 
+            if (!response.IsSuccess)
                 return BadRequest(response.Message);
 
             return NoContent();
@@ -196,12 +193,12 @@ namespace Sales.API.Controllers
             if (resetPassword.Password != resetPassword.ConfirmPassword)
                 return BadRequest("Las contraseñas no coinciden");
 
-            Guid userId =  Guid.Parse(resetPassword.UserId);
+            Guid userId = Guid.Parse(resetPassword.UserId);
             User user = await _userHelper.GetUserAsync(userId);
             if (user == null) return NotFound("No se ha encontrado el usuario");
 
-            var result = await _userHelper.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
-            if(!result.Succeeded)
+            IdentityResult result = await _userHelper.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
+            if (!result.Succeeded)
                 return BadRequest(result.Errors.FirstOrDefault());
 
             return NoContent();

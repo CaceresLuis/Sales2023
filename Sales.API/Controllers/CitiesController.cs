@@ -2,13 +2,14 @@
 using Sales.Shared.DTOs;
 using Sales.API.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Sales.API.Infrastructure.Exceptions;
-using Sales.API.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Sales.API.Infrastructure.Repositories;
+using Sales.API.Infrastructure.Exceptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Sales.API.Infrastructure.Repositories.Interfaces;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class CitiesController : ControllerBase
@@ -42,7 +43,6 @@ namespace Sales.API.Controllers
             return Ok(_mapper.Map<CityDto>(city));
         }
 
-        [AllowAnonymous]
         [HttpGet("combo/{stateId:int}")]
         public async Task<ActionResult> GetCombo(int stateId)
         {
@@ -51,6 +51,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> AddCity(CityDto cityDto)
         {
             cityDto.Id = 0;
@@ -58,11 +59,12 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _cityRepository.AddAsync(_mapper.Map<City>(cityDto));
+            _cityRepository.Add(_mapper.Map<City>(cityDto));
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 
         [HttpPut("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> UpdateState(int id, CityDto cityDto)
         {
             if (!ModelState.IsValid || cityDto.Id != id)
@@ -72,18 +74,19 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _cityRepository.UpdateAsync(_mapper.Map<City>(cityDto));
+            _cityRepository.Update(_mapper.Map<City>(cityDto));
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 
         [HttpDelete("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> DeleteState(int id)
         {
             City city = await _cityRepository.GetByIdAsync(id);
             if (city is null)
                 return NotFound();
 
-            _cityRepository.DeleteAsync(city);
+            _cityRepository.Delete(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 

@@ -1,6 +1,6 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Sales.Web</a>
+        <a class="navbar-brand" href="">Sales Web</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -14,19 +14,31 @@
                 <span class="bi bi-house-door-fill" />Home 
             </NavLink>
         </div>
-        <AuthorizeView Roles="Admin, User">
+        <AuthorizeView Roles="Admin">
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/categories">
-                        <span class="oi oi-plus" aria-hidden="true"></span> Categories
+                        <span class="bi bi-plus" aria-hidden="true"></span> Categories
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/countries">
-                        <span class="oi oi-globe" aria-hidden="true"></span> Countries
+                        <span class="bi bi-globe" aria-hidden="true"></span> Countries
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/products">
+                        <span class="bi bi-star-fill" aria-hidden="true"></span> Products
                     </NavLink>
                 </div>
             </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/products">
+                        <span class="bi bi-star-fill" aria-hidden="true"></span> Products
+                    </NavLink>
+                </div>
+            </NotAuthorized>
         </AuthorizeView>
     </nav>
 </div>

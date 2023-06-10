@@ -15,18 +15,36 @@ namespace Sales.API.Infrastructure.Repositories
             _context = context;
         }
 
-        public new async Task<Product> GetByIdAsync(int id) => await _context.Products.Include(p => p.ProductImages).Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).FirstOrDefaultAsync(p => p.Id == id);
+        public async Task<bool> NameProductExistAsync(string name) => await _context.Products.AnyAsync(p => p.Name.ToLower() == name.ToLower());
+
+        public async Task<Product> GetByIdActiveAsync(int id) => await _context.Products.Include(p => p.ProductImages)
+            .Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+
+        public async Task<Product> GetDeleteByIdAsync(int id) => await _context.Products.Include(p => p.ProductImages)
+            .Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted);
 
         public async Task<IEnumerable<Product>> GetAllAsync(PaginationDto pagination)
         {
             IQueryable<Product> queriable = _context.Products.Include(p => p.ProductImages)
-                .Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).AsQueryable();
+                .Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).Where(p => !p.IsDeleted).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
                 queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
 
             return await queriable.OrderBy(p => p.Name).Paginate(pagination).ToListAsync();
         }
+
+        public async Task<IEnumerable<Product>> GetAllDeltedAsync(PaginationDto pagination)
+        {
+            IQueryable<Product> queriable = _context.Products.Include(p => p.ProductImages)
+                .Include(p => p.ProductCategories).ThenInclude(pc => pc.Category).Where(p => p.IsDeleted).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));
+
+            return await queriable.OrderBy(p => p.Name).Paginate(pagination).ToListAsync();
+        }
+
         public async Task<double> GetPages(PaginationDto pagination)
         {
             IQueryable<Product> queriable = _context.Products.AsQueryable();

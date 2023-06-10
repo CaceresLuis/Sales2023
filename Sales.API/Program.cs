@@ -81,15 +81,15 @@ builder.Services.AddCors(options =>
 WebApplication app = builder.Build();
 
 //inyeccion de datos harcode
-SeedData(app);
-static void SeedData(WebApplication app)
-{
-    IServiceScopeFactory scopeFactory = app.Services.GetService<IServiceScopeFactory>();
+//SeedData(app);
+//static void SeedData(WebApplication app)
+//{
+//    IServiceScopeFactory scopeFactory = app.Services.GetService<IServiceScopeFactory>();
 
-    using IServiceScope scope = scopeFactory.CreateScope();
-    SeedDb service = scope.ServiceProvider.GetService<SeedDb>();
-    service.SeedAsync().Wait();
-}
+//    using IServiceScope scope = scopeFactory.CreateScope();
+//    SeedDb service = scope.ServiceProvider.GetService<SeedDb>();
+//    service.SeedAsync().Wait();
+//}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

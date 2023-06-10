@@ -3,7 +3,7 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
-
+@attribute [Authorize(Roles = "Admin")]
 @if (country is null)
 {
     <div class="spinner-grow" />
