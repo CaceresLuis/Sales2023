@@ -29,6 +29,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost("Login")]
+        [AllowAnonymous]
         public async Task<ActionResult> LoginAsync(LoginDto login)
         {
             if (!ModelState.IsValid)

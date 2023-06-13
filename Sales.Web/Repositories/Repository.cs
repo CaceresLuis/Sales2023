@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Sales.Web.Responses;
 using Sales.Web.Repositories.Interfaces;
+using System.Net.Http.Json;
 
 namespace Sales.Web.Repositories
 {
@@ -36,9 +37,9 @@ namespace Sales.Web.Repositories
 
         public async Task<HttpResponseWrapper<TResponse>> Post<T, TResponse>(string url, T model)
         {
-            string messageJson = JsonSerializer.Serialize(model);
-            StringContent messageContent = new(messageJson, Encoding.UTF8, "application/json");
-            HttpResponseMessage httpResponse = await _httpClient.PostAsync(url, messageContent);
+            //string messageJson = JsonSerializer.Serialize(model);
+            //StringContent messageContent = new(messageJson, Encoding.UTF8, "application/json");
+            HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(url, model);
             if (!httpResponse.IsSuccessStatusCode)
                 return new HttpResponseWrapper<TResponse>(default, !httpResponse.IsSuccessStatusCode, httpResponse);
 
@@ -49,7 +50,7 @@ namespace Sales.Web.Repositories
         private static async Task<T> UnserializeAnswer<T>(HttpResponseMessage HttpResponse, JsonSerializerOptions serializerOptions)
         {
             string stringResponse = await HttpResponse.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(stringResponse, serializerOptions);
+            return JsonSerializer.Deserialize<T>(stringResponse, serializerOptions)!;
         }
 
         public async Task<HttpResponseWrapper<object>> Put<T>(string url, T model)

@@ -19,7 +19,7 @@
     private string? photoUser;
 
     [CascadingParameter]
-    public Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = null!;
 
     protected async override Task OnParametersSetAsync()
     {
