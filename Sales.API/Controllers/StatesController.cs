@@ -60,7 +60,9 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _stateRepository.Add(_mapper.Map<State>(stateDto));
+            State state = _mapper.Map<State>(stateDto);
+            state.CrateAt = DateTime.UtcNow;
+            _stateRepository.Add(state);
             return Ok(await _stateRepository.SaveChangesAsync());
 
         }
@@ -76,7 +78,10 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _stateRepository.Update(_mapper.Map<State>(stateDto));
+            State state = _mapper.Map<State>( stateDto);
+            state.UpdateAt = DateTime.UtcNow;
+            state.IsUpdated = true;
+            _stateRepository.Update(state);
             return Ok(await _stateRepository.SaveChangesAsync());
         }
 
@@ -88,7 +93,9 @@ namespace Sales.API.Controllers
             if (state is null)
                 return NotFound();
 
-            _stateRepository.Delete(state);
+            state.IsDeleted = true;
+            state.DeleteAt = DateTime.UtcNow;
+            _stateRepository.Update(state);
             return Ok(await _stateRepository.SaveChangesAsync());
         }
 

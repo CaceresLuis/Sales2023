@@ -59,7 +59,9 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _cityRepository.Add(_mapper.Map<City>(cityDto));
+            City city = _mapper.Map<City>(cityDto);
+            city.CrateAt = DateTime.Now;
+            _cityRepository.Add(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 
@@ -74,7 +76,10 @@ namespace Sales.API.Controllers
             if (confirData.Error)
                 return BadRequest(confirData.Message);
 
-            _cityRepository.Update(_mapper.Map<City>(cityDto));
+            City city = _mapper.Map<City>(cityDto);
+            city.UpdateAt = DateTime.Now;
+            city.IsUpdated = true;
+            _cityRepository.Update(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 
@@ -86,6 +91,8 @@ namespace Sales.API.Controllers
             if (city is null)
                 return NotFound();
 
+            city.IsDeleted = true;
+            city.DeleteAt = DateTime.UtcNow;
             _cityRepository.Delete(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }

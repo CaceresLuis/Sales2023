@@ -43,6 +43,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("combo")]
+        [AllowAnonymous]
         public async Task<ActionResult> GetCombo()
         {
             IEnumerable<Country> getCountries = await _countryRepository.GetAllAsync();
@@ -56,7 +57,9 @@ namespace Sales.API.Controllers
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            _countryRepository.Add(_mapper.Map<Country>(countryDto));
+            Country country = _mapper.Map<Country>(countryDto);
+            country.CrateAt = DateTime.UtcNow;
+            _countryRepository.Add(country);
             return Ok(await _countryRepository.SaveChangesAsync());
 
         }
@@ -71,7 +74,10 @@ namespace Sales.API.Controllers
             if (await _countryRepository.CountryExisteAsync(countryDto.Name))
                 return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
 
-            _countryRepository.Update(_mapper.Map<Country>(countryDto));
+            Country country = _mapper.Map<Country>(countryDto);
+            country.UpdateAt = DateTime.UtcNow;
+            country.IsUpdated = true;
+            _countryRepository.Update(country);
             return Ok(await _countryRepository.SaveChangesAsync());
         }
 
@@ -83,7 +89,9 @@ namespace Sales.API.Controllers
             if (country is null)
                 return NotFound();
 
-            _countryRepository.Delete(country);
+            country.DeleteAt = DateTime.UtcNow;
+            country.IsDeleted = true;
+            _countryRepository.Update(country);
             return Ok(await _countryRepository.SaveChangesAsync());
         }
 

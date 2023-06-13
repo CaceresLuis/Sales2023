@@ -64,15 +64,36 @@ else
                                     <td>
                                         @($"{product.Stock:N2}")
                                     </td>
-                                    <td>
-                                        @product.ProductCategories!.Count()
-                                    </td>
-                                    <td>
-                                        @product.ProductImages!.Count()
-                                    </td>
-                                    <td>
-                                        <img src="@product.FistImage" style="width:100px;" />
-                                    </td>
+                                    @if (product.ProductCategories!.Count() > 0)
+                                    {
+                                        <td>
+                                            @product.ProductCategories!.Count()
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            0
+                                        </td>
+                                    }
+                                    @if (product.ProductImages!.Count() > 0)
+                                    {
+                                        <td>
+                                            @product.ProductImages!.Count()
+                                        </td>
+                                        <td>
+                                            <img src="@product.ProductImages!.FirstOrDefault()!.Image" style="width:100px;" />
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            0
+                                        </td>
+                                        <td>
+                                            <img src="/icon-192.png" style="width:100px;" />
+                                        </td>
+                                    }
                                     @if(role == "Admin")
                                     {
                                         <td>

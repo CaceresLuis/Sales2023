@@ -15,6 +15,7 @@ namespace Sales.API.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
+    [ApiController]
     public class AccountsController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -53,6 +54,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Get()
         {
             User getUser = await _userHelper.GetUserAsync(User.Identity.Name!);
@@ -99,7 +101,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost("changePassword")]
-        [Authorize(Roles = "Admin, User")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ChangePasswordAsync(ChangePasswordDto changePassword)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -150,7 +152,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Admin, User")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Update(UpdateUserDto userDto)
         {
             User user = _mapper.Map<User>(userDto);

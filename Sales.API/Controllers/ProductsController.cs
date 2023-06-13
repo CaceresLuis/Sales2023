@@ -24,6 +24,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> GetProducts([FromQuery] PaginationDto pagination)
         {
             IEnumerable<Product> productos = await _productService.GetAllAsync(pagination);
@@ -45,6 +46,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult> GetProduct(int id)
         {
             Product product = await _productService.GetByIdActiveAsync(id);
@@ -101,6 +103,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("totalPages")]
+        [AllowAnonymous]
         public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
         {
             return Ok(await _productService.GetPages(pagination));
