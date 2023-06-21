@@ -3,9 +3,10 @@
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 @attribute [Authorize(Roles = "Admin")]
+
 @if(Countries is null)
 {
-    <div class="spinner-grow" />
+    <MudProgressCircular Color="Color.Success" Indeterminate="true" />
 }
 
 <GenericList MyList="Countries">
@@ -13,8 +14,8 @@
         <div class="card">
             <div class="card-header">
                 <span>
-                    <div class="oi oi-list">Paises</div>
-                    <a class="btn btn-sm btn-primary float-end" @onclick=@(() => ShowModal())><i class="oi oi-plus" />Nuevo pais</a>
+                    <MudIcon Icon="@Icons.Material.Filled.List" />Paises
+                    <MudButton Class="float-end" @onclick=@(() => ShowModal()) Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Nuevo pais</MudButton>
                 </span>
             </div>
             <div class="card-body">
@@ -23,8 +24,8 @@
                         <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
                     </div>
                     <div class="mx-1">
-                        <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" />Filtrar</button>
-                        <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync"><i class="oi oi-ban" />Limpiar</button>
+                        <MudButton Variant="Variant.Outlined" @onclick="ApplyFilterAsync" StartIcon="@Icons.Material.Filled.Layers" Color="Color.Default">Filtrar</MudButton>
+                        <MudButton Variant="Variant.Outlined" @onclick="CleanFilterAync" StartIcon="@Icons.Material.Filled.LayersClear" Color="Color.Error">Limpiar</MudButton>
                     </div>
                 </div>
                 <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
@@ -39,6 +40,7 @@
                     <tbody>
                         @foreach (var country in Countries!)
                         {
+                            string url = $"/countries/details/{country.Id}";
                             <tr>
                                 <td>
                                     @country.Name
@@ -47,9 +49,11 @@
                                     @country.StatesNumber
                                 </td>
                                 <td>
-                                    <a class="btn btn-info" href="/countries/details/@country.Id"><i class="oi oi-list"></i></a>
-                                    <a class="btn btn-warning" @onclick=@(() => ShowModal(country.Id, true))><i class="oi oi-pencil"></i></a>
-                                    <button class="btn btn-danger" @onclick=@(() => DeleteAsync(country.Id))><i class="oi oi-trash"></i></button>
+                                    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Medium" Color="Color.Primary">
+                                        <MudIconButton href="@url" Icon="@Icons.Material.Filled.List" Color="Color.Info"></MudIconButton>
+                                        <MudIconButton @onclick=@(() => ShowModal(country.Id, true)) Icon="@Icons.Material.Filled.Edit" Color="Color.Warning"></MudIconButton>
+                                        <MudIconButton @onclick=@(() => DeleteAsync(country.Id)) Icon="@Icons.Material.Filled.Delete" Color="Color.Error"></MudIconButton>
+                                    </MudButtonGroup>
                                 </td>
                             </tr>
                         }
@@ -138,11 +142,13 @@
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        await sweetAlertService.FireAsync("Borrado", "El pais fue borrado", SweetAlertIcon.Success);
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("El pais fue borrado.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         await LoadAsync();
     }
 
-    private async Task CleanFiltrAync()
+    private async Task CleanFilterAync()
     {
         Filter = string.Empty;
         await ApplyFilterAsync();

@@ -1,0 +1,61 @@
+﻿@page "/products/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+@attribute [Authorize(Roles = "Admin")]
+
+@if (loading)
+{
+    <div class="spinner" />
+}
+else
+{
+    <ProductForm @ref="productForm" ProductDto="productDto" NonSelectedCategories="nonSelectedCategories" OnValidSubmit="CreateAsync" ReturnAction="Return" />
+}
+
+@code {
+    private SimpleProductDto productDto = new SimpleProductDto
+        {
+            ProductCategoriesId = new List<int>(),
+            ProductImages = new List<string>()
+        };
+
+    private ProductForm? productForm;
+    private List<CategoryDto> selectedCategories = new();
+    private List<CategoryDto> nonSelectedCategories = new();
+    private bool loading = true;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var httpResponse = await repository.Get<List<CategoryDto>>("/api/categories");
+        loading = false;
+
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        nonSelectedCategories = httpResponse.Response!;
+    }
+
+    private async Task CreateAsync()
+    {
+        var httpResponse = await repository.Post("/api/products", productDto);
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        Return();
+    }
+
+    private void Return()
+    {
+        productForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo($"/products");
+    }
+}

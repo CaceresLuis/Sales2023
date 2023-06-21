@@ -60,7 +60,7 @@ namespace Sales.API.Controllers
                 return BadRequest(confirData.Message);
 
             City city = _mapper.Map<City>(cityDto);
-            city.CrateAt = DateTime.Now;
+            city.CrateAt = DateTime.UtcNow;
             _cityRepository.Add(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }
@@ -77,7 +77,7 @@ namespace Sales.API.Controllers
                 return BadRequest(confirData.Message);
 
             City city = _mapper.Map<City>(cityDto);
-            city.UpdateAt = DateTime.Now;
+            city.UpdateAt = DateTime.UtcNow;
             city.IsUpdated = true;
             _cityRepository.Update(city);
             return Ok(await _cityRepository.SaveChangesAsync());
@@ -93,7 +93,7 @@ namespace Sales.API.Controllers
 
             city.IsDeleted = true;
             city.DeleteAt = DateTime.UtcNow;
-            _cityRepository.Delete(city);
+            _cityRepository.Update(city);
             return Ok(await _cityRepository.SaveChangesAsync());
         }
 

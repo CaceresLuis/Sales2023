@@ -25,7 +25,8 @@
         }
 
         await BlazoredModal.CloseAsync(ModalResult.Ok());
-        await sweetAlertService.FireAsync("Registrado", "El pais fue Registrado", SweetAlertIcon.Success);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("El pais fue Registrado.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         Back();
     }
 

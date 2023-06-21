@@ -5,7 +5,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @if (Categories is null)
 {
-    <div class="spinner-grow" />
+    <MudProgressCircular Color="Color.Success" Indeterminate="true" />
 }
 
 <GenericList MyList="Categories">
@@ -13,8 +13,8 @@
         <div class="card">
             <div class="card-header">
                 <span>
-                    <i class="bi bi-list-columns-reverse" /> Categorias
-                    <a class="btn btn-sm btn-primary float-end" @onclick=@(() => ShowModal())><i class="oi oi-plus">Agregar Categoria</i></a>
+                    <MudIcon Icon="@Icons.Material.Filled.List" /> Categorias
+                    <MudButton Class="float-end" @onclick=@(() => ShowModal()) Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Agregar Categoria</MudButton>
                 </span>
             </div>
             <div class="card-body">
@@ -23,9 +23,17 @@
                         <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar Categortia... " @bind-value="Filter" />
                     </div>
                     <div class="mx-1">
-                        <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers"/>Filtrar</button>
-                        <button type="button" class="btn btn-primary" @onclick="CleanFilterAsync"><i class="oi oi-ban" />Limpiar</button>
-                    </div>
+                        <MudButton Variant="Variant.Outlined" @onclick="ApplyFilterAsync" StartIcon="@Icons.Material.Filled.Layers" Color="Color.Default">Filtrar</MudButton>
+                        <MudButton Variant="Variant.Outlined" @onclick="CleanFilterAsync" StartIcon="@Icons.Material.Filled.LayersClear" Color="Color.Error">Limpiar</MudButton>
+                        @if(catgoryState)
+                        {
+                            <MudButton Variant="Variant.Filled" @onclick=@(() => LoadCatgoryDeleted()) StartIcon="@Icons.Material.Filled.FolderDelete" Color="Color.Dark">Categorias Borradas</MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" @onclick=@(() => LoadAsync()) StartIcon="@Icons.Material.Filled.Folder" Color="Color.Success">Categorias Activas</MudButton>
+                        }
+                        </div>
                 </div>
                 <Pagination CurrentPage="currentpage" TotalPages="totalPage" SelectedPage="SelectedPageAsync" />
                 <table class="table table-striped">
@@ -43,8 +51,16 @@
                                     @category.Name
                                 </td>
                                 <td>
-                                    <a class="btn btn-warning" @onclick=@(() => ShowModal(category.Id, true))><i class="oi oi-pencil"></i></a>
-                                    <button class="btn btn-danger" @onclick=@(() => DeleteAsync(category.Id))><i class="oi oi-trash"></i></button>
+                                    @if (catgoryState)
+                                    {
+                                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Medium" Color="Color.Primary">
+                                            <MudIconButton @onclick=@(() => ShowModal(category.Id, true)) Icon="@Icons.Material.Filled.Edit" Color="Color.Warning"></MudIconButton>
+                                            <MudIconButton @onclick=@(() => DeleteAsync(category.Id)) Icon="@Icons.Material.Filled.Delete" Color="Color.Error"></MudIconButton>
+                                        </MudButtonGroup>
+                                    }else
+                                    {
+                                        <MudIconButton Variant="Variant.Outlined" Size="Size.Medium" @onclick=@(() => RestoreCategory(category.Id, category.Name!)) Icon="@Icons.Material.Filled.Restore" Color="Color.Success"></MudIconButton>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -70,6 +86,8 @@
     [SupplyParameterFromQuery]
     public string Filter { get; set; } = "";
 
+    private bool catgoryState = true;
+
     protected async override Task OnInitializedAsync()
     {
         await LoadAsync();
@@ -86,7 +104,7 @@
         if (!string.IsNullOrWhiteSpace(Page))
             page = Convert.ToInt32(Page);
 
-        var url2 = (string.IsNullOrEmpty(Filter)) ? "categories/totalPages" : $"categories/totalPages?filter={Filter}";
+        var url2 = (string.IsNullOrEmpty(Filter)) ? $"categories/totalPages?deleted={false}" : $"categories/totalPages?filter={Filter}?deleted={false}";
         var url1 = (string.IsNullOrEmpty(Filter)) ? $"categories?page={page}" : $"categories?page={page}&filter={Filter}";
 
         var httpResponsePage = await repository.Get<int>(url2);
@@ -100,6 +118,29 @@
 
         totalPage = httpResponsePage.Response;
         Categories = httpResponseCatgories.Response;
+        catgoryState = true;
+    }
+
+    private async Task LoadCatgoryDeleted(int page = 1)
+    {
+        if (!string.IsNullOrWhiteSpace(Page))
+            page = Convert.ToInt32(Page);
+
+        var url2 = (string.IsNullOrEmpty(Filter)) ? $"categories/totalPages?deleted={true}" : $"categories/totalPages?filter={Filter}?deleted={true}";
+        var url1 = (string.IsNullOrEmpty(Filter)) ? $"categories/GetCategoriesDeletedAsync?page={page}" : $"categories/GetCategoriesDeletedAsync?page={page}&filter={Filter}";
+
+        var httpResponsePage = await repository.Get<int>(url2);
+        var httpResponseCatgories = await repository.Get<List<CategoryDto>>(url1);
+        if (httpResponseCatgories.Error)
+        {
+            var message = await httpResponseCatgories.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        totalPage = httpResponsePage.Response;
+        Categories = httpResponseCatgories.Response;
+        catgoryState = false;
     }
 
     private async Task DeleteAsync(int id)
@@ -124,7 +165,30 @@
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        await sweetAlertService.FireAsync("Borrado", "La categoria fue borrada", SweetAlertIcon.Success);
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("La categoria fue borrada.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
+        await LoadAsync();
+    }
+
+    private async Task RestoreCategory(int id, string name)
+    {
+        CategoryDto categoryDto = new CategoryDto
+            {
+                Id = id,
+                Name = name,
+                IsDeleted = false,
+                Restore = true
+            };
+        var httpResponse = await repository.Put($"categories/id?id={id}", categoryDto);
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("La categoria fue Actualizada.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         await LoadAsync();
     }
 

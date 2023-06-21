@@ -17,9 +17,9 @@ else
                 <div class="card">
                     <div class="card-header">
                         <span>
-                            <a class="btn btn-info float-lg-start" href="/countries/details/@state.CountryId"><i class="oi oi-arrow-thick-left"></i></a>
-                            <div class="oi oi-flash mx-3">@state.Name</div>
-                            <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(state.Id))>Nueva Ciudad<i class="oi oi-plus"></i></a>
+                            <MudButton href="@url" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowCircleLeft" Color="Color.Primary">Volver</MudButton>
+                            <i class="bi bi-flag-fill mx-3">@state.Name</i>
+                            <MudButton Class="float-end" @onclick=@(() => ShowModal(state.Id)) Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Nueva Ciudad</MudButton>
                         </span>
                     </div>
                     <div class="card-body">
@@ -28,8 +28,8 @@ else
                                 <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
                             </div>
                             <div class="mx-1">
-                                <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" />Filtrar</button>
-                                <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync"><i class="oi oi-ban" />Limpiar</button>
+                                <MudButton Variant="Variant.Outlined" @onclick="ApplyFilterAsync" StartIcon="@Icons.Material.Filled.Layers" Color="Color.Default">Filtrar</MudButton>
+                                <MudButton Variant="Variant.Outlined" @onclick="CleanFilterAync" StartIcon="@Icons.Material.Filled.LayersClear" Color="Color.Error">Limpiar</MudButton>
                             </div>
                         </div>
                         <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
@@ -49,8 +49,10 @@ else
                                         </td>
 
                                         <td>
-                                            <a class="btn btn-warning" @onclick=@(() => ShowModal(city.Id, true)) ><i class="oi oi-pencil"></i></a>
-                                            <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))><i class="oi oi-trash"></i></button>
+                                            <MudButtonGroup Variant="Variant.Outlined" Size="Size.Medium" Color="Color.Primary">
+                                                <MudIconButton @onclick=@(() => ShowModal(city.Id, true)) Icon="@Icons.Material.Filled.Edit" Color="Color.Warning"></MudIconButton>
+                                                <MudIconButton @onclick=@(() => DeleteAsync(city.Id)) Icon="@Icons.Material.Filled.Delete" Color="Color.Error"></MudIconButton>
+                                            </MudButtonGroup>
                                         </td>
                                     </tr>
                                 }
@@ -67,9 +69,9 @@ else
         <div class="card">
             <div class="card-header">
                 <span>
-                    <a class="btn btn-info float-lg-start" href="/countries/details/@state.CountryId"><i class="oi oi-arrow-thick-left"></i></a>
-                    <i class="bi bi-flag-fill mx-3">@state.Name</i>
-                    <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(state.Id))>Nueva Ciudad<i class="oi oi-plus"></i></a>
+                    <MudButton href="@url" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowCircleLeft" Color="Color.Primary">Volver</MudButton>
+                    <i class="bi bi-flag-fill">@state.Name</i>
+                    <MudButton Class="float-end" @onclick=@(() => ShowModal(state.Id)) Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Nueva Ciudad</MudButton>
                 </span>
             </div>
             <div class="card-body">
@@ -84,6 +86,7 @@ else
     private List<CityDto>? cities;
     private int currentPage = 1;
     private int totalPages;
+    private string? url;
 
     [Parameter] 
     public int StateId { get; set; }
@@ -137,9 +140,10 @@ else
             cities = httpResponseCities.Response;
             totalPages = httpResponsePages.Response;
         }        
+        url = $"/countries/details/{@state.CountryId}";
     }
 
-    private async Task CleanFiltrAync()
+    private async Task CleanFilterAync()
     {
         Filter = string.Empty;
         await ApplyFilterAsync();
@@ -174,8 +178,8 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-
-        await sweetAlertService.FireAsync("Borrada", "La ciudad fue borrada", SweetAlertIcon.Success);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("La ciudad fue borrada.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         await LoadAsync();
     }
 

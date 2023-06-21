@@ -10,8 +10,8 @@
             <ValidationMessage For="@(() => State.Name)" />
         </div>
     </div>
-    <button class="btn btn-outline-info" @onclick="ReturnAction"><i class="oi oi-arrow-thick-left"></i></button>
-    <button class="btn btn-success float-end" type="submit"><i class="oi oi-circle-check"></i></button>
+    <MudIconButton Variant="Variant.Outlined" Size="Size.Medium" @onclick="ReturnAction" Icon="@Icons.Material.Filled.ArrowCircleLeft" Color="Color.Info"></MudIconButton>
+    <MudIconButton class="float-end" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Size="Size.Medium" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIconButton>
 </EditForm>
 
 @code {

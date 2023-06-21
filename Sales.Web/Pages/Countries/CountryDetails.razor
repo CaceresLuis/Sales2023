@@ -16,9 +16,9 @@ else if(states is not null)
             <div class="card">
                 <div class="card-header">
                     <span>
-                        <a class="btn btn-info float-lg-start" href="/countries"><i class="oi oi-arrow-thick-left"></i></a>
+                        <MudButton href="/countries" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowCircleLeft" Color="Color.Primary">Volver</MudButton>
                         <div class="oi oi-flag mx-2 text-xl-start">@country.Name</div>
-                        <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(country.Id))>Nuevo Estado<i class="oi oi-plus"></i></a>
+                        <MudButton Class="float-end" @onclick=@(() => ShowModal(country.Id)) Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Nuevo Estado</MudButton>
                     </span>
                 </div>
                 <div class="card-body">
@@ -27,8 +27,8 @@ else if(states is not null)
                             <input style="width:400px" type="text" class="form-control" id="titulo" placeholder="Buscar pais..." @bind-value="Filter" />
                         </div>
                         <div class="mx-1">
-                            <button type="button" class="btn btn-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" />Filtrar</button>
-                            <button type="button" class="btn btn-primary" @onclick="CleanFiltrAync"><i class="oi oi-ban" />Limpiar</button>
+                            <MudButton Variant="Variant.Outlined" @onclick="ApplyFilterAsync" StartIcon="@Icons.Material.Filled.Layers" Color="Color.Default">Filtrar</MudButton>
+                            <MudButton Variant="Variant.Outlined" @onclick="CleanFiltrAync" StartIcon="@Icons.Material.Filled.LayersClear" Color="Color.Error">Limpiar</MudButton>
                         </div>
                     </div>
                     <Pagination CurrentPage="currentPage" TotalPages="totalPages" SelectedPage="SelectedPageAsync" />
@@ -43,6 +43,7 @@ else if(states is not null)
                         <tbody>
                             @foreach (var state in states!)
                             {
+                                string url = $"/states/details/{state.Id}";
                                 <tr>
                                     <td>
                                         @state.Name
@@ -51,9 +52,11 @@ else if(states is not null)
                                         @state.CitiesNumber
                                     </td>
                                     <td>
-                                        <a class="btn btn-info" href="/states/details/@state.Id"><i class="oi oi-list"></i></a>
-                                        <a class="btn btn-warning" @onclick=@(() => ShowModal(state.Id, true))><i class="oi oi-pencil"></i></a>
-                                        <button class="btn btn-danger" @onclick=@(() => DeleteAsync(state.Id))><i class="oi oi-trash"></i></button>
+                                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Medium" Color="Color.Primary">
+                                            <MudIconButton href="@url" Icon="@Icons.Material.Filled.List" Color="Color.Info"></MudIconButton>
+                                            <MudIconButton @onclick=@(() => ShowModal(state.Id, true)) Icon="@Icons.Material.Filled.Edit" Color="Color.Warning"></MudIconButton>
+                                            <MudIconButton @onclick=@(() => DeleteAsync(state.Id)) Icon="@Icons.Material.Filled.Delete" Color="Color.Error"></MudIconButton>
+                                       </MudButtonGroup>
                                     </td>
                                 </tr>
                             }
@@ -72,7 +75,7 @@ else
             <span>
                 <a class="btn btn-info float-lg-start" href="/countries"><i class="oi oi-arrow-thick-left"></i></a>
                 <i class="bi bi-flag-fill mx-2 text-xl-start">@country.Name</i>
-                <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(country.Id))>Nuevo Estado<i class="oi oi-plus"></i></a>
+                <a class="btn btn-primary float-end" @onclick=@(() => ShowModal(country.Id))><MudIcon Icon="@Icons.Material.Filled.Add" />Nuevo Estado</a>
             </span>
         </div>
         <div class="card-body">
@@ -158,7 +161,9 @@ else
             await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
             return;
         }
-        await sweetAlertService.FireAsync("Borrado", "El Departamento / Estado fue borrado", SweetAlertIcon.Success);
+
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("El Departamento / Estado fue borrado.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         await LoadAsync();
     }
 

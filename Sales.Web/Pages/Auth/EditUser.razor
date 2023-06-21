@@ -15,10 +15,9 @@ else
         <div class="card">
             <div class="card-header">
                 <span>
-                    <i class="oi oi-person" /> Editar usuario
-                    <a class="btn btn-sm btn-secondary float-end" href="/ChangePassword"><i class="oi oi-key" />Cambiar Contraseña</a>
-                    <button class="btn btn-sm btn-primary float-end mx-2" type="submit"><i class="oi oi-check" /> Guardar Cambios</button>
-
+                    <i class="bi bi-person-circle" /> Editar usuario
+                    <MudButton href="/ChangePassword" class="float-end" Variant="Variant.Filled" Color="Color.Surface" StartIcon="@Icons.Material.Filled.Key">Cambiar Contraseña</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" class="float-end" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check">Guardar Cambios</MudButton>
                 </span>
             </div>
             <div class="card-body">
@@ -113,6 +112,7 @@ else
 
 @code {
     private string? imageUrl;
+    private string? newImage;
     private UpdateUserDto? user;
     private List<CityDto>? cities;
     private List<SimpleStateDto>? states;
@@ -141,12 +141,13 @@ else
 
     private void ImageSelected(string imageBase64)
     {
-        user!.Photo = imageBase64;
+        newImage = imageBase64;
         imageUrl = null;
     }
 
     private async Task SaveUserAsync()
     {
+        user!.Photo = newImage;
         var httpResponse = await repository.Put<UpdateUserDto, TokenDto>("Accounts", user!);
         if (httpResponse.Error)
         {

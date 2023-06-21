@@ -23,6 +23,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllAsync([FromQuery] PaginationDto pagination)
         {
             IEnumerable<Category> categories = await _categoryRepository.GetAllAsync(pagination);
@@ -33,6 +34,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("id")]
+        [AllowAnonymous]
         public async Task<ActionResult<CategoryDto>> GetAsync(int id)
         {
             Category category = await _categoryRepository.GetByIdActiveAsync(id);
@@ -43,7 +45,7 @@ namespace Sales.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet("DeletedCategories")]
+        [HttpGet("GetCategoriesDeletedAsync")]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAllDeletedAsync([FromQuery] PaginationDto pagination)
         {
             IEnumerable<Category> categories = await _categoryRepository.GetAllDeletedAsync(pagination);
@@ -58,8 +60,14 @@ namespace Sales.API.Controllers
         public async Task<ActionResult<bool>> AddCategorie(CategoryDto categoryDto)
         {
             categoryDto.Id = 0;
-            if (await _categoryRepository.CategoryExisteAsysn(categoryDto.Name))
-                return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
+            Category categoryExist = await _categoryRepository.GetCategoryIfExist(categoryDto.Name);
+            if (categoryExist is not null)
+            {
+                if (categoryExist.IsDeleted)
+                    return BadRequest("Esta categoria ya existe como borrada");
+                else 
+                    return BadRequest("Esta categoria ya existe");
+            }
 
             Category category = _mapper.Map<Category>(categoryDto);
             category.CrateAt = DateTime.UtcNow;
@@ -76,11 +84,30 @@ namespace Sales.API.Controllers
                 return BadRequest("Datos invalidos");
 
             Category category = await _categoryRepository.GetByIdAsync(id);
-            if (category.Name == categoryDto.Name)
-                return BadRequest($"La categoria: {categoryDto.Name} ya esta registrada");
+            if (category is null)
+                return BadRequest($"La categoria: no existe");
 
             category.UpdateAt = DateTime.UtcNow;
             category.IsUpdated = true;
+
+            if (categoryDto.Restore)
+            {
+                category.IsDeleted = categoryDto.IsDeleted;
+                _categoryRepository.Update(category);
+                return Ok(await _categoryRepository.SaveChangesAsync());
+            }
+
+            Category categoryExist = await _categoryRepository.GetCategoryIfExist(categoryDto.Name);
+            if (categoryExist is not null)
+            {
+                if (categoryExist.IsDeleted) 
+                    return BadRequest("Esta category ya existe como borrada");
+                else 
+                    return BadRequest("Esta category ya existe");
+            }
+
+            
+            category.Name = categoryDto.Name;
             _categoryRepository.Update(category);
 
             return Ok(await _categoryRepository.SaveChangesAsync());
@@ -102,10 +129,10 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("totalPages")]
-        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination)
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDto pagination, bool deleted)
         {
-            double get = await _categoryRepository.GetPages(pagination);
-            return Ok(get);
+            return Ok(await _categoryRepository.GetPages(pagination, deleted));
         }
     }
 }

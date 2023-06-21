@@ -2,7 +2,8 @@
 {
     public interface ILoginService
     {
-        Task LoginAsync(string token);
         Task LogoutAsync();
+        Task<bool> IstokenActive();
+        Task LoginAsync(string token);
     }
 }

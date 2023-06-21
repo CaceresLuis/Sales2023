@@ -11,6 +11,8 @@ namespace Sales.Shared.DTOs
         [MaxLength(100, ErrorMessage = "El campos {0} no puede tener mas de {1} caracteres")]
         public string Name { get; set; } = string.Empty;
 
+        public bool IsDeleted { get; set; }
+
         public ICollection<StateDto>? States { get; set; }
         public int StatesNumber => States == null ? 0 : States.Count;
 

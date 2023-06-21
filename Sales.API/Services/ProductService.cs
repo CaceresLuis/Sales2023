@@ -104,9 +104,8 @@ namespace Sales.API.Services
         {
             foreach (string image in images)
             {
-                string filePaht = $"{Environment.CurrentDirectory}\\Helpers\\products\\{image}";
-                byte[] fileBytes = File.ReadAllBytes(filePaht);
-                string imagePaht = await _fileStorage.SaveFileAsync(fileBytes, ".jpg", "products");
+                var photoProduct = Convert.FromBase64String(image);
+                string imagePaht = await _fileStorage.SaveFileAsync(photoProduct, ".jpg", "products");
                 ProductImage addImage = new() { Image = imagePaht, Product = product };
                 product.ProductImages.Add(addImage);
                 _productImageRepository.Add(addImage);

@@ -11,31 +11,31 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill" />Home 
+                <MudIcon Icon="@Icons.Material.Filled.Home" />Home
             </NavLink>
         </div>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/categories">
-                        <span class="bi bi-plus" aria-hidden="true"></span> Categories
+                        <MudIcon Icon="@Icons.Material.Filled.Category" /> Categories
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/countries">
-                        <span class="bi bi-globe" aria-hidden="true"></span> Countries
+                        <MudIcon Icon="@Icons.Material.Filled.LocationCity" /> Countries
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/products">
-                        <span class="bi bi-star-fill" aria-hidden="true"></span> Products
+                        <MudIcon Icon="@Icons.Material.Filled.Sell" /> Products
                     </NavLink>
                 </div>
             </Authorized>
             <NotAuthorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/products">
-                        <span class="bi bi-star-fill" aria-hidden="true"></span> Products
+                        <MudIcon Icon="@Icons.Material.Filled.Sell"/> Products
                     </NavLink>
                 </div>
             </NotAuthorized>

@@ -49,7 +49,8 @@ else
         }
 
         await BlazoredModal.CloseAsync(ModalResult.Ok());
-        await sweetAlertService.FireAsync("Actualizado", "El Estado/Departamento fue Actualizado", SweetAlertIcon.Success);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("El Estado/Departamento fue Actualizado.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         Back();
     }
 

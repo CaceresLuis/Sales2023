@@ -54,8 +54,14 @@ namespace Sales.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> AddCountry(SimpleCountryDto countryDto)
         {
-            if (await _countryRepository.CountryExisteAsync(countryDto.Name))
-                return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
+            Country countryExist = await _countryRepository.GetCountryIfExist(countryDto.Name);
+            if (countryExist is not null)
+            {
+                if (countryExist.IsDeleted)
+                    return BadRequest($"El pais: {countryDto.Name} ya esta registrado como borrado");
+                else
+                    return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
+            }
 
             Country country = _mapper.Map<Country>(countryDto);
             country.CrateAt = DateTime.UtcNow;
@@ -71,12 +77,21 @@ namespace Sales.API.Controllers
             if (!ModelState.IsValid || countryDto.Id != id)
                 return BadRequest("Datos invalidos");
 
-            if (await _countryRepository.CountryExisteAsync(countryDto.Name))
-                return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
+            Country countryExist = await _countryRepository.GetCountryIfExist(countryDto.Name);
+            if (countryExist is not null)
+            {
+                if (countryExist.IsDeleted)
+                    return BadRequest($"El pais: {countryDto.Name} ya esta registrado como borrado");
+                else
+                    return BadRequest($"El pais: {countryDto.Name} ya esta registrado");
+            }
 
-            Country country = _mapper.Map<Country>(countryDto);
+            Country country = await _countryRepository.GetByIdAsync(id);
+            if (country is null) return BadRequest("El pais no existe");
+
             country.UpdateAt = DateTime.UtcNow;
             country.IsUpdated = true;
+            country.Name = countryDto.Name ?? country.Name;
             _countryRepository.Update(country);
             return Ok(await _countryRepository.SaveChangesAsync());
         }

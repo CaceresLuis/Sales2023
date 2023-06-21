@@ -23,7 +23,7 @@ namespace Sales.API.Infrastructure.Repositories
         public async Task<IEnumerable<State>> GetAllAsync(PaginationDto pagination)
         {
             IQueryable<State> queriable = _context.States.Include(s => s.Cities)
-                .Where(s => s.CountryId == pagination.Id).AsQueryable();
+                .Where(s => s.CountryId == pagination.Id && !s.IsDeleted).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
                 queriable = queriable.Where(c => c.Name.ToLower().Contains(pagination.Filter.ToLower()));

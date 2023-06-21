@@ -24,7 +24,8 @@
         }
 
         await BlazoredModal.CloseAsync(ModalResult.Ok());
-        await sweetAlertService.FireAsync("Registrado", "La categoria fue Registrada", SweetAlertIcon.Success);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("La categoria fue Registrada.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         Back();
     }
 

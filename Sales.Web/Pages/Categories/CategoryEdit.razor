@@ -46,7 +46,8 @@ else
         }
 
         await BlazoredModal.CloseAsync(ModalResult.Ok());
-        await sweetAlertService.FireAsync("Actualizado", "La categoria fue Actualizada", SweetAlertIcon.Success);
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add("La categoria fue Actualizada.", Severity.Success, config => { config.Icon = Icons.Material.Filled.Check; });
         Back();
     }
 

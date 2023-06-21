@@ -5,10 +5,10 @@ namespace Sales.API.Infrastructure.Repositories.Interfaces
 {
     public interface ICategoryRepository : IRepository<Category>
     {
-        Task<bool> CategoryExisteAsysn(string name);
         Task<IEnumerable<Category>> GetAllAsync(PaginationDto pagination);
         Task<IEnumerable<Category>> GetAllDeletedAsync(PaginationDto pagination);
         Task<Category> GetByIdActiveAsync(int id);
-        Task<double> GetPages(PaginationDto pagination);
+        Task<Category> GetCategoryIfExist(string name);
+        Task<double> GetPages(PaginationDto pagination, bool deleted);
     }  
 }

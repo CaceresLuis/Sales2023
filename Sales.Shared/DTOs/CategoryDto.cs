@@ -16,5 +16,6 @@ namespace Sales.Shared.DTOs
         public DateTime UpdateAt { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime DeleteAt { get; set; }
+        public bool Restore { get; set; }
     }
 }

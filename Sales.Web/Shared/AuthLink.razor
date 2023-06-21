@@ -1,17 +1,21 @@
-﻿<AuthorizeView>
+﻿@inject ILoginService loginService
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+<AuthorizeView>
     <Authorized>
-        <a href="EditUser" class="nav-link btn btn-link">@context.User.Identity!.Name</a>
         @if (!string.IsNullOrEmpty(photoUser))
         {
             <div class="mx-2">
                 <img src="@photoUser" width="50" height="50" style="border-radius:50%">
             </div>
         }
-        <a href="Logout" class="nav-link btn btn-link">Cerrar Sesion</a>
+        <MudButton href="EditUser" Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Person">@context.User.Identity!.Name</MudButton>
+        <MudButton href="Logout" Variant="Variant.Outlined" Color="Color.Surface" StartIcon="@Icons.Material.Filled.Logout">Cerrar Sesion</MudButton>
     </Authorized>
     <NotAuthorized>
-        <a href="Register" class="nav-link btn btn-link">Registrarme</a>
-        <a href="Login" class="nav-link btn btn-link">Inicia Sesion</a>
+        <MudButton href="Register" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAddAlt1">Registrarme</MudButton>
+        <MudButton href="Login" Variant="Variant.Outlined" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Login">Inicia Sesion</MudButton>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -29,6 +33,18 @@
         if (photoClaim is not null)
         {
             photoUser = photoClaim.Value;
+        }
+
+        if (claims.Any())
+        {
+            var isActive = await loginService.IstokenActive();
+
+            if (!isActive)
+            {
+                await sweetAlertService.FireAsync("Error", "Sesion Caducada, Vulelve a loguearte", SweetAlertIcon.Error);
+                navigationManager.NavigateTo("/Login");
+                return;
+            }
         }
     }
 }
